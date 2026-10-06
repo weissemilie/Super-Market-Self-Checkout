@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { MockLampView } from '../lamp/MockLampView'
 import styles from './TopBar.module.css'
 
 function formatClock(date: Date): string {
@@ -32,7 +33,10 @@ export function TopBar() {
         </svg>
         <span className={styles.name}>Spejder Super</span>
       </div>
-      <span className={styles.clock}>{formatClock(now)}</span>
+      <div className={styles.rightGroup}>
+        <MockLampView />
+        <span className={styles.clock}>{formatClock(now)}</span>
+      </div>
     </header>
   )
 }

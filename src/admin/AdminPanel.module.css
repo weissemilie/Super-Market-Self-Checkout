@@ -1,0 +1,241 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  background: var(--color-bg);
+  overflow-y: auto;
+  padding: 32px;
+}
+
+.panel {
+  width: 100%;
+  max-width: 1000px;
+  color: var(--color-text);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.heading {
+  font-size: 36px;
+  margin: 0;
+}
+
+.closeButton {
+  font-size: 20px;
+  font-weight: 700;
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-border);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background: var(--color-text-muted);
+  color: var(--color-bg);
+}
+
+.sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.section {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+.sectionTitle {
+  font-size: 24px;
+  margin: 0 0 16px;
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: 15px;
+  color: var(--color-text-muted);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table th {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.presetRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.presetButton {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.presetButtonActive {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  border-color: var(--color-primary);
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+}
+
+.errorList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.queuedNotice {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.errorRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.errorCheckLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+}
+
+.errorCode {
+  font-weight: 700;
+  min-width: 36px;
+}
+
+.errorTitle {
+  color: var(--color-text-muted);
+}
+
+.triggerButton {
+  flex: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.triggerButtonQueued {
+  background: var(--color-red);
+  border-color: var(--color-red);
+  color: #ffffff;
+}
+
+.sliderRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 16px;
+}
+
+.sliderRow input[type='range'] {
+  width: 100%;
+}
+
+.lampStatus {
+  font-size: 18px;
+  margin: 0 0 16px;
+}
+
+.resetButton {
+  font-size: 18px;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-red);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.footer {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.footerLink {
+  font-size: 16px;
+  color: var(--color-primary-dark);
+}
+
+@media (max-width: 800px) {
+  .sections {
+    grid-template-columns: 1fr;
+  }
+}

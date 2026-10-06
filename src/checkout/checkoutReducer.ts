@@ -5,11 +5,14 @@ import type {
   CheckoutAction,
   CheckoutSettings,
   CheckoutState,
+  FlashKind,
   ScanRolls,
 } from './types'
 
 export const DONE_DURATION_MS = 8000
 export const PENALTY_DURATION_MS = 10000
+export const FLASH_DURATION_MS = 2000
+export const RESOLVED_DISPLAY_MS = 2000
 export const UNKNOWN_PRICE_MIN_DKK = 10
 export const UNKNOWN_PRICE_MAX_DKK = 50
 export const UNKNOWN_PRODUCT_NAME = 'Ukendt vare'
@@ -31,10 +34,14 @@ export function createInitialState(
       errorsSolved: 0,
       wrongCards: 0,
       solveTimesMs: [],
+      history: [],
     },
     error: null,
     doneAt: null,
     lastReceipt: null,
+    lastErrorSolvedAt: null,
+    flash: null,
+    adminOpen: false,
   }
 }
 
@@ -72,6 +79,23 @@ function addToCart(cart: CartItem[], item: Omit<CartItem, 'quantity'>): CartItem
   )
 }
 
+function openAdmin(state: CheckoutState): CheckoutState {
+  return { ...state, adminOpen: true }
+}
+
+function closeAdmin(state: CheckoutState): CheckoutState {
+  return { ...state, adminOpen: false }
+}
+
+function withFlash(
+  state: CheckoutState,
+  text: string,
+  kind: FlashKind,
+  now: number,
+): CheckoutState {
+  return { ...state, flash: { text, kind, expiresAt: now + FLASH_DURATION_MS } }
+}
+
 function enterError(
   state: CheckoutState,
   errorCode: string,
@@ -91,6 +115,8 @@ function enterError(
       resumeMode,
       errorStartedAt: now,
       penaltyUntil: null,
+      wrongCardsThisError: 0,
+      resolvedAt: null,
     },
   }
 }
@@ -101,6 +127,10 @@ function handleProductScan(
   now: number,
   rolls: ScanRolls,
 ): CheckoutState {
+  if (state.adminOpen) {
+    return state
+  }
+
   if (state.mode === 'ERROR' || state.mode === 'PAYING' || state.mode === 'DONE') {
     return state
   }
@@ -155,13 +185,18 @@ function handleStaffCardScan(
   now: number,
 ): CheckoutState {
   if (state.mode !== 'ERROR' || !state.error) {
-    return state
+    return withFlash(state, 'Intet at godkende', 'info', now)
   }
 
   const { error } = state
 
-  if (error.penaltyUntil !== null && now < error.penaltyUntil) {
+  if (error.resolvedAt !== null) {
+    // Fejlen er allerede løst og venter bare på at skærmen skifter tilbage.
     return state
+  }
+
+  if (error.penaltyUntil !== null && now < error.penaltyUntil) {
+    return withFlash(state, 'Vent til nedtællingen er færdig', 'info', now)
   }
 
   const expectedCode = error.activeError.solution[error.progress]
@@ -171,29 +206,54 @@ function handleStaffCardScan(
 
     if (progress >= error.activeError.solution.length) {
       const solveTimeMs = now - error.errorStartedAt
-      return {
-        ...state,
-        mode: error.resumeMode,
-        error: null,
-        stats: {
-          ...state.stats,
-          errorsSolved: state.stats.errorsSolved + 1,
-          solveTimesMs: [...state.stats.solveTimesMs, solveTimeMs],
+      return withFlash(
+        {
+          ...state,
+          error: { ...error, progress, resolvedAt: now },
+          lastErrorSolvedAt: now,
+          stats: {
+            ...state.stats,
+            errorsSolved: state.stats.errorsSolved + 1,
+            solveTimesMs: [...state.stats.solveTimesMs, solveTimeMs],
+            history: [
+              ...state.stats.history,
+              {
+                errorCode: error.activeError.code,
+                solveTimeMs,
+                wrongCards: error.wrongCardsThisError,
+              },
+            ],
+          },
         },
-      }
+        'Problemet er løst',
+        'success',
+        now,
+      )
     }
 
-    return {
+    return withFlash(
+      { ...state, error: { ...error, progress } },
+      card.label,
+      'success',
+      now,
+    )
+  }
+
+  return withFlash(
+    {
       ...state,
-      error: { ...error, progress },
-    }
-  }
-
-  return {
-    ...state,
-    stats: { ...state.stats, wrongCards: state.stats.wrongCards + 1 },
-    error: { ...error, progress: 0, penaltyUntil: now + PENALTY_DURATION_MS },
-  }
+      stats: { ...state.stats, wrongCards: state.stats.wrongCards + 1 },
+      error: {
+        ...error,
+        progress: 0,
+        penaltyUntil: now + PENALTY_DURATION_MS,
+        wrongCardsThisError: error.wrongCardsThisError + 1,
+      },
+    },
+    'Forkert kort, start forfra',
+    'error',
+    now,
+  )
 }
 
 export function checkoutReducer(
@@ -204,8 +264,10 @@ export function checkoutReducer(
     case 'SCAN': {
       const { code, now, rolls } = action
 
+      // MESTER åbner/lukker instruktørpanelet uanset mode, og tæller aldrig
+      // som et forkert kort, heller ikke under en aktiv fejl.
       if (code === 'MESTER') {
-        return state
+        return state.adminOpen ? closeAdmin(state) : openAdmin(state)
       }
 
       if (/^\d{13}$/.test(code)) {
@@ -259,15 +321,39 @@ export function checkoutReducer(
       return { ...state, settings: { ...state.settings, ...action.settings } }
     }
 
+    case 'OPEN_ADMIN': {
+      return openAdmin(state)
+    }
+
+    case 'CLOSE_ADMIN': {
+      return closeAdmin(state)
+    }
+
     case 'TICK': {
+      let next = state
+
       if (
-        state.mode === 'DONE' &&
-        state.doneAt !== null &&
-        action.now - state.doneAt >= DONE_DURATION_MS
+        next.mode === 'ERROR' &&
+        next.error !== null &&
+        next.error.resolvedAt !== null &&
+        action.now - next.error.resolvedAt >= RESOLVED_DISPLAY_MS
       ) {
-        return { ...state, mode: 'IDLE', doneAt: null, lastReceipt: null }
+        next = { ...next, mode: next.error.resumeMode, error: null }
       }
-      return state
+
+      if (
+        next.mode === 'DONE' &&
+        next.doneAt !== null &&
+        action.now - next.doneAt >= DONE_DURATION_MS
+      ) {
+        next = { ...next, mode: 'IDLE', doneAt: null, lastReceipt: null }
+      }
+
+      if (next.flash !== null && action.now >= next.flash.expiresAt) {
+        next = { ...next, flash: null }
+      }
+
+      return next
     }
 
     default:

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { useBarcodeScanner } from '../scanner/useBarcodeScanner'
 import { beep, errorAlarm, success } from '../sound'
 import { checkoutReducer, createInitialState } from './checkoutReducer'
+import { loadSettings, saveSettings } from './settingsStorage'
 import type { CheckoutAction, CheckoutState } from './types'
 
 const TICK_INTERVAL_MS = 1000
@@ -21,9 +22,17 @@ export interface UseCheckoutResult {
 }
 
 export function useCheckout(): UseCheckoutResult {
-  const [state, dispatch] = useReducer(checkoutReducer, createInitialState())
+  const [state, dispatch] = useReducer(
+    checkoutReducer,
+    undefined,
+    () => createInitialState(loadSettings()),
+  )
   const [recentScans, setRecentScans] = useState<RecentScan[]>([])
   const nextScanId = useRef(0)
+
+  useEffect(() => {
+    saveSettings(state.settings)
+  }, [state.settings])
 
   // Fælles indgang for både rigtige scanninger (useBarcodeScanner nedenfor)
   // og simulerede scanninger fra ScanDebug's inputfelt.

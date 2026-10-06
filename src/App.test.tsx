@@ -6,6 +6,7 @@ import App from './App'
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  localStorage.clear()
 })
 
 describe('App', () => {
@@ -43,6 +44,30 @@ describe('App', () => {
     fireEvent.keyDown(window, { key: 'Enter' })
 
     expect(screen.getByText(/Rugbrød/)).toBeTruthy()
+  })
+
+  it('skriver en 13 cifret kode i inputfeltet tegn for tegn, og hele koden bliver scannet', () => {
+    render(<App />)
+
+    fireEvent.keyDown(window, { key: 'F2' })
+    const input = screen.getByPlaceholderText('Indtast kode og tryk Enter') as HTMLInputElement
+
+    // Stregkoden indeholder bl.a. cifrene 1, der tidligere var tastaturgenvej
+    // til at skifte fejl-forudindstilling. Hvert tegn sendes som sit eget
+    // keydown på selve inputfeltet, ligesom en rigtig bruger ville skrive.
+    const barcode = '5701000000001'
+    let typed = ''
+    for (const char of barcode) {
+      typed += char
+      fireEvent.keyDown(input, { key: char })
+      fireEvent.change(input, { target: { value: typed } })
+    }
+
+    expect(input.value).toBe(barcode)
+
+    fireEvent.submit(input.closest('form')!)
+
+    expect(screen.getByText(/Øko mælk 1 liter/)).toBeTruthy()
   })
 
   it('udløser E02 ved en ukendt vare, når fejl-rullet er lavt (Math.random mocket til 0.1)', () => {

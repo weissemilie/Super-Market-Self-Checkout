@@ -16,6 +16,12 @@
   height: 70px;
 }
 
+.lampCorner {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}
+
 .code {
   font-size: 120px;
   font-weight: 900;
@@ -46,6 +52,10 @@
   margin-top: 24px;
 }
 
+.dotsShake {
+  animation: dots-shake 0.4s ease-out;
+}
+
 .dot,
 .dotSolved {
   width: 32px;
@@ -61,6 +71,38 @@
 .dotSolved {
   background: currentColor;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25);
+  animation: dot-pop 0.3s ease-out;
+}
+
+@keyframes dot-pop {
+  0% {
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes dots-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(6px);
+  }
 }
 
 .penalty {
@@ -83,4 +125,33 @@
   font-weight: 900;
   margin: 8px 0 0;
   font-variant-numeric: tabular-nums;
+}
+
+.hintBox {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(700px, calc(100vw - 48px));
+  padding: 14px 24px;
+  border-radius: 12px;
+  background: #fffbe6;
+  color: #3a2f00;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.hintIcon {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  color: #a67c00;
+}
+
+.hintText {
+  margin: 0;
+  font-size: 22px;
+  text-align: left;
 }

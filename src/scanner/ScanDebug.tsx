@@ -60,6 +60,7 @@ export function ScanDebug({ recentScans, simulateScan }: ScanDebugProps) {
   return (
     <div className={styles.panel}>
       <h2 className={styles.title}>Scanner debug (F2 eller Ctrl+D for at skjule)</h2>
+
       <form onSubmit={handleInputSubmit} className={styles.form}>
         <input
           type="text"

@@ -27,6 +27,12 @@
   text-transform: uppercase;
 }
 
+.rightGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .clock {
   font-size: 24px;
   font-weight: 600;

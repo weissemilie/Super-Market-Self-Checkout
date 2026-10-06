@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import type { LampColor } from '../data'
 import type { ActiveErrorState } from '../checkout/types'
+import type { LampColor } from '../data'
+import { MockLampView } from '../lamp/MockLampView'
+import { shouldShowHint } from './errorHint'
 import styles from './ErrorOverlay.module.css'
 
 const COUNTDOWN_TICK_MS = 200
@@ -28,15 +30,25 @@ export function ErrorOverlay({ error }: ErrorOverlayProps) {
   const isPenalty = error.penaltyUntil !== null && remainingMs > 0
   const remainingSeconds = isPenalty ? Math.ceil(remainingMs / 1000) : 0
 
+  // Hintet beregnes direkte fra errorStartedAt og den løbende now - ingen
+  // separat timer, bare et derived udtryk der genberegnes ved hvert tick.
+  const showHint = shouldShowHint(error.errorStartedAt, now)
+
   const lamp = LAMP_STYLES[error.activeError.lampColor]
   const solvedCount = error.progress
   const totalCount = error.activeError.solution.length
+  const dotsClassName =
+    error.wrongCardsThisError > 0 ? `${styles.dots} ${styles.dotsShake}` : styles.dots
 
   return (
     <div
       className={styles.overlay}
       style={{ backgroundColor: lamp.background, color: lamp.color }}
     >
+      <div className={styles.lampCorner}>
+        <MockLampView size="large" />
+      </div>
+
       <svg
         className={styles.warningIcon}
         viewBox="0 0 64 56"
@@ -58,18 +70,45 @@ export function ErrorOverlay({ error }: ErrorOverlayProps) {
       <p className={styles.callStaff}>Tilkald personale</p>
 
       <div
-        className={styles.dots}
+        key={error.wrongCardsThisError}
+        className={dotsClassName}
         aria-label={`${solvedCount} af ${totalCount} kort scannet`}
       >
-        {Array.from({ length: totalCount }, (_, index) => (
-          <span key={index} className={index < solvedCount ? styles.dotSolved : styles.dot} />
-        ))}
+        {Array.from({ length: totalCount }, (_, index) => {
+          const isSolved = index < solvedCount
+          return (
+            <span
+              key={`${index}-${isSolved}`}
+              className={isSolved ? styles.dotSolved : styles.dot}
+            />
+          )
+        })}
       </div>
 
       {isPenalty && (
         <div className={styles.penalty}>
           <p className={styles.penaltyText}>Forkert kort</p>
           <p className={styles.countdown}>{remainingSeconds}</p>
+        </div>
+      )}
+
+      {showHint && (
+        <div className={styles.hintBox}>
+          <svg
+            className={styles.hintIcon}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 18h6" />
+            <path d="M10 21h4" />
+            <path d="M12 3a6 6 0 0 0-4 10.5c.6.5 1 1.3 1 2.1V16h6v-.4c0-.8.4-1.6 1-2.1A6 6 0 0 0 12 3Z" />
+          </svg>
+          <p className={styles.hintText}>{error.activeError.hint}</p>
         </div>
       )}
     </div>
