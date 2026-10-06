@@ -1,0 +1,15 @@
+[
+  { "code": "KORT01", "label": "Personale", "role": "personale", "isDecoy": false },
+  { "code": "KORT02", "label": "Tekniker", "role": "tekniker", "isDecoy": false },
+  { "code": "KORT03", "label": "Manuel vare", "role": "handling", "isDecoy": false },
+  { "code": "KORT04", "label": "Alder godkendt", "role": "handling", "isDecoy": false },
+  { "code": "KORT05", "label": "Vægt nulstil", "role": "handling", "isDecoy": false },
+  { "code": "KORT06", "label": "Papir skiftet", "role": "handling", "isDecoy": false },
+  { "code": "KORT07", "label": "Kupon tilsidesæt", "role": "handling", "isDecoy": false },
+  { "code": "KORT08", "label": "Genstart kasse", "role": "handling", "isDecoy": false },
+  { "code": "KORT09", "label": "Terminal genstart", "role": "tekniker", "isDecoy": false },
+  { "code": "KORT10", "label": "Bekræft", "role": "handling", "isDecoy": false },
+  { "code": "KORT11", "label": "Annuller køb", "role": "lokkekort", "isDecoy": true },
+  { "code": "KORT12", "label": "Kald vagt", "role": "lokkekort", "isDecoy": true },
+  { "code": "MESTER", "label": "Mesterkort", "role": "mester", "isDecoy": false }
+]

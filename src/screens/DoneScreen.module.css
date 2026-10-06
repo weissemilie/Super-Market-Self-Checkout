@@ -1,0 +1,87 @@
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 32px;
+}
+
+.checkIcon {
+  width: 96px;
+  height: 96px;
+  color: var(--color-primary);
+}
+
+.thanks {
+  font-size: 48px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.receipt {
+  width: 420px;
+  max-width: 90vw;
+  background: var(--color-card);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family:
+    ui-monospace,
+    'SFMono-Regular',
+    Consolas,
+    'Liberation Mono',
+    monospace;
+  color: var(--color-text);
+}
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
+}
+
+.name {
+  flex: 1;
+}
+
+.quantity {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.price {
+  min-width: 110px;
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.divider {
+  border-top: 2px dashed var(--color-border);
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 32px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "code": "E01",
+    "title": "Uventet vare i posepladsen",
+    "message": "Der ligger en vare i posepladsen, som ikke er betalt.",
+    "lampColor": "yellow",
+    "solution": ["KORT01"],
+    "hint": "Scan personalekortet for at frigive posepladsen.",
+    "weight": 3
+  },
+  {
+    "code": "E02",
+    "title": "Varen blev ikke fundet",
+    "message": "Stregkoden kan ikke genkendes af systemet.",
+    "lampColor": "yellow",
+    "solution": ["KORT01", "KORT03"],
+    "hint": "Scan personalekort og derefter kortet til manuel vare.",
+    "weight": 3
+  },
+  {
+    "code": "E03",
+    "title": "Aldersbekræftelse påkrævet",
+    "message": "Varen kræver godkendelse af kundens alder.",
+    "lampColor": "red",
+    "solution": ["KORT01", "KORT04"],
+    "hint": "Scan personalekort og derefter kortet til aldersgodkendelse.",
+    "weight": 2
+  },
+  {
+    "code": "E04",
+    "title": "Vægten passer ikke",
+    "message": "Vægten i posepladsen stemmer ikke med varen.",
+    "lampColor": "yellow",
+    "solution": ["KORT01", "KORT05"],
+    "hint": "Scan personalekort og derefter kortet til vægt nulstil.",
+    "weight": 2
+  },
+  {
+    "code": "E05",
+    "title": "Kvitteringspapir tomt",
+    "message": "Printeren er løbet tør for kvitteringspapir.",
+    "lampColor": "blue",
+    "solution": ["KORT02", "KORT06"],
+    "hint": "Scan teknikerkort og derefter kortet for skiftet papir.",
+    "weight": 1
+  },
+  {
+    "code": "E06",
+    "title": "Rabatkupon afvist",
+    "message": "Den indscannede rabatkupon kan ikke godkendes.",
+    "lampColor": "yellow",
+    "solution": ["KORT01", "KORT07"],
+    "hint": "Scan personalekort og derefter kortet til tilsidesættelse af kupon.",
+    "weight": 2
+  },
+  {
+    "code": "E07",
+    "title": "Kassen er overbelastet",
+    "message": "Systemet har registreret for mange varer på kort tid.",
+    "lampColor": "red",
+    "solution": ["KORT02", "KORT08", "KORT01"],
+    "hint": "Scan teknikerkort, derefter genstart kasse og bekræft med personalekort.",
+    "weight": 1
+  },
+  {
+    "code": "E08",
+    "title": "Betalingsterminal svarer ikke",
+    "message": "Kortterminalen reagerer ikke på betalingen.",
+    "lampColor": "red",
+    "solution": ["KORT02", "KORT09", "KORT10"],
+    "hint": "Scan teknikerkort, genstart terminal og bekræft.",
+    "weight": 1
+  }
+]

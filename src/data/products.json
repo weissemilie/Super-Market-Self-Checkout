@@ -1,0 +1,17 @@
+[
+  { "barcode": "5701000000001", "name": "Øko mælk 1 liter", "priceDkk": 13.95, "ageRestricted": false },
+  { "barcode": "5701000000002", "name": "Rugbrød", "priceDkk": 24.95, "ageRestricted": false },
+  { "barcode": "5701000000003", "name": "Smør 200 g", "priceDkk": 27.95, "ageRestricted": false },
+  { "barcode": "5701000000004", "name": "Æg, 10 stk", "priceDkk": 32.95, "ageRestricted": false },
+  { "barcode": "5701000000005", "name": "Kartofler 2 kg", "priceDkk": 19.95, "ageRestricted": false },
+  { "barcode": "5701000000006", "name": "Bananer 1 kg", "priceDkk": 14.95, "ageRestricted": false },
+  { "barcode": "5701000000007", "name": "Tomater 500 g", "priceDkk": 17.95, "ageRestricted": false },
+  { "barcode": "5701000000008", "name": "Hakket oksekød 400 g", "priceDkk": 39.95, "ageRestricted": false },
+  { "barcode": "5701000000009", "name": "Kyllingefilet 500 g", "priceDkk": 49.95, "ageRestricted": false },
+  { "barcode": "5701000000010", "name": "Toastbrød", "priceDkk": 18.95, "ageRestricted": false },
+  { "barcode": "5701000000011", "name": "Havregryn 500 g", "priceDkk": 15.95, "ageRestricted": false },
+  { "barcode": "5701000000012", "name": "Ketchup", "priceDkk": 21.95, "ageRestricted": false },
+  { "barcode": "5701000000013", "name": "Pasta 500 g", "priceDkk": 12.95, "ageRestricted": false },
+  { "barcode": "5701000000014", "name": "Pilsner øl, 500 ml", "priceDkk": 14.95, "ageRestricted": true },
+  { "barcode": "5701000000015", "name": "Energidrik 250 ml", "priceDkk": 16.95, "ageRestricted": true }
+]
