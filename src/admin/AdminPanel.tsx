@@ -65,11 +65,21 @@ export function AdminPanel({ open, state, dispatch, errorGenerator }: AdminPanel
         </div>
 
         <footer className={styles.footer}>
-          <a href="#print" className={styles.footerLink}>
-            Udskriv kvittering
+          <a
+            href="#print"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.footerLink}
+          >
+            Print personalekort
           </a>
-          <a href="#manual" className={styles.footerLink}>
-            Manual
+          <a
+            href="#manual"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.footerLink}
+          >
+            Fejlmanual
           </a>
         </footer>
       </div>

@@ -1,0 +1,107 @@
+.coverPage {
+  width: 210mm;
+  height: 297mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10mm;
+  text-align: center;
+  padding: 20mm;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.coverLogo {
+  width: 24mm;
+  height: 24mm;
+  color: var(--color-primary);
+}
+
+.coverBrand {
+  font-size: 14pt;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 1pt;
+}
+
+.coverTitle {
+  font-size: 28pt;
+  font-weight: 800;
+  margin: 0;
+}
+
+.coverGuide {
+  font-size: 13pt;
+  line-height: 1.5;
+  max-width: 140mm;
+  color: #1b211f;
+}
+
+.page {
+  width: 210mm;
+  height: 297mm;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+@media print {
+  .coverPage,
+  .page {
+    page-break-after: always;
+  }
+}
+
+.errorBlock {
+  flex: 1;
+  box-sizing: border-box;
+  padding: 14mm 16mm;
+  display: flex;
+  flex-direction: column;
+  gap: 4mm;
+  overflow: hidden;
+}
+
+.errorBlock:first-child {
+  border-bottom: 1px dashed #aaaaaa;
+}
+
+.errorCode {
+  font-size: 40pt;
+  font-weight: 900;
+  color: var(--color-primary);
+  margin: 0;
+  line-height: 1;
+}
+
+.errorTitle {
+  font-size: 18pt;
+  font-weight: 700;
+  margin: 0;
+}
+
+.errorDescriptionLabel,
+.errorSolutionLabel {
+  font-size: 11pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #5c6662;
+  margin: 3mm 0 0;
+}
+
+.errorDescription {
+  font-size: 13pt;
+  margin: 0;
+  color: #1b211f;
+}
+
+.solutionList {
+  margin: 0;
+  padding-left: 6mm;
+  font-size: 13pt;
+  line-height: 1.5;
+  color: #1b211f;
+}

@@ -6,8 +6,13 @@ interface StatsSectionProps {
   stats: CheckoutStats
 }
 
+const secondsFormatter = new Intl.NumberFormat('da-DK', {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
+
 function formatSeconds(ms: number): string {
-  return (ms / 1000).toFixed(1)
+  return secondsFormatter.format(ms / 1000)
 }
 
 export function StatsSection({ stats }: StatsSectionProps) {

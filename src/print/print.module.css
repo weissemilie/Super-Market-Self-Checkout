@@ -1,0 +1,48 @@
+.screen {
+  background: var(--color-surface);
+  min-height: 100vh;
+  padding: 24px;
+  color-adjust: exact;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.printButton {
+  display: block;
+  margin: 0 auto 24px;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 12px 32px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  cursor: pointer;
+}
+
+.pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+@media print {
+  .printButton {
+    display: none;
+  }
+
+  .screen {
+    background: none;
+    padding: 0;
+  }
+
+  .pages {
+    gap: 0;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}
