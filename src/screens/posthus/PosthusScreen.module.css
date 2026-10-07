@@ -1,0 +1,15 @@
+.screen {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  padding: 32px;
+}

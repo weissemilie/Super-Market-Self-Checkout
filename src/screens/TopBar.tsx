@@ -7,7 +7,11 @@ function formatClock(date: Date): string {
   return date.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' })
 }
 
-export function TopBar() {
+interface TopBarProps {
+  department?: string
+}
+
+export function TopBar({ department }: TopBarProps) {
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
@@ -19,7 +23,9 @@ export function TopBar() {
     <header className={styles.topBar}>
       <div className={styles.brand}>
         <CartLogo className={styles.cartIcon} />
-        <span className={styles.name}>Super Super Market</span>
+        <span className={styles.name}>
+          {department ? `Super Super Market · ${department}` : 'Super Super Market'}
+        </span>
       </div>
       <div className={styles.rightGroup}>
         <MockLampView />

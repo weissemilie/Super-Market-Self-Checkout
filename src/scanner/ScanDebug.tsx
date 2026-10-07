@@ -25,9 +25,11 @@ interface RecentScan {
 interface ScanDebugProps {
   recentScans: RecentScan[]
   simulateScan: (code: string) => void
+  // Afdelinger uden varer og personalekort kan give egne navne til koder.
+  classify?: (code: string) => string
 }
 
-export function ScanDebug({ recentScans, simulateScan }: ScanDebugProps) {
+export function ScanDebug({ recentScans, simulateScan, classify }: ScanDebugProps) {
   const [visible, setVisible] = useState(false)
   const [inputValue, setInputValue] = useState('')
 
@@ -78,7 +80,7 @@ export function ScanDebug({ recentScans, simulateScan }: ScanDebugProps) {
             </span>
             <span className={styles.code}>{entry.code}</span>
             <span className={styles.kind}>
-              {KIND_LABELS[classifyCode(entry.code)]}
+              {classify ? classify(entry.code) : KIND_LABELS[classifyCode(entry.code)]}
             </span>
           </li>
         ))}
