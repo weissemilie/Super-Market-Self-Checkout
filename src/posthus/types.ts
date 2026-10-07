@@ -51,7 +51,6 @@ export type PosthusAction =
   | { type: 'SCAN'; code: string; now: number }
   | { type: 'TICK'; now: number }
   | { type: 'CANCEL' }
-  | { type: 'REGISTER_PARCELS'; codes: string[]; now: number }
   | { type: 'RESET' }
   | { type: 'OPEN_ADMIN' }
   | { type: 'CLOSE_ADMIN' }

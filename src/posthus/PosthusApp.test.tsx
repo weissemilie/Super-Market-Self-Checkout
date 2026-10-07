@@ -61,11 +61,13 @@ describe('PostSyd i App', () => {
     expect(screen.getAllByText('PAKKE003')).toHaveLength(1) // kun i oversigten
   })
 
-  it('MESTER åbner instruktørpanelet med posthussektioner', () => {
+  it('MESTER åbner instruktørpanelet med nulstilling og uden lampe eller tilfældige pakker', () => {
     render(<App />)
     scanCode('MESTER')
-    expect(screen.getByText('Registrer 10 tilfældige pakker')).toBeTruthy()
     expect(screen.getByText('Nulstil PostSyd')).toBeTruthy()
+    expect(screen.queryByText('Registrer 10 tilfældige pakker')).toBeNull()
+    expect(screen.queryByText('Lampe')).toBeNull()
+    expect(screen.queryByText('Forbind Arduino')).toBeNull()
   })
 
   it('afdeling uden posthus viser kassen', () => {
