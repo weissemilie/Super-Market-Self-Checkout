@@ -1,5 +1,6 @@
 import { loadJson, saveJson } from '../storage'
 import { createEmptyData } from './posthusReducer'
+import type { Parcel } from './types'
 import type { PosthusData } from './types'
 
 const STORAGE_KEY = 'spejder-super.posthus'
@@ -48,7 +49,18 @@ function isValidData(value: unknown): value is PosthusData {
 }
 
 export function loadPosthusData(): PosthusData {
-  return loadJson(STORAGE_KEY, isValidData) ?? createEmptyData()
+  const data = loadJson(STORAGE_KEY, isValidData)
+  if (!data) {
+    return createEmptyData()
+  }
+  // Data gemt før checkIns fandtes: tæl de registrerede pakker.
+  if (typeof data.stats.checkIns !== 'number') {
+    const registered = Object.values<Parcel>(data.parcels).filter(
+      (parcel) => parcel.registeredAt !== null,
+    ).length
+    return { ...data, stats: { ...data.stats, checkIns: registered } }
+  }
+  return data
 }
 
 export function savePosthusData(data: PosthusData): void {

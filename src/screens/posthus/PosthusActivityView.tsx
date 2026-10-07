@@ -27,10 +27,7 @@ function describe(activity: PosthusActivityViewProps['activity']): Content {
       return {
         tone: 'error',
         code: activity.parcelCode,
-        message:
-          activity.status === 'udleveret'
-            ? 'Pakken er allerede udleveret'
-            : 'Pakken er allerede i biksen',
+        message: 'Pakken er allerede i biksen',
       }
     case 'unknown':
       return { tone: 'error', code: activity.code, message: 'Ukendt kode' }

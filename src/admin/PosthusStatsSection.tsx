@@ -1,4 +1,4 @@
-import { averageDeliveryTimeMs, countByStatus, countRegistered } from '../posthus/parcelStatus'
+import { averageDeliveryTimeMs } from '../posthus/parcelStatus'
 import type { PosthusData } from '../posthus/types'
 import styles from './AdminPanel.module.css'
 
@@ -15,11 +15,11 @@ export function PosthusStatsSection({ data }: { data: PosthusData }) {
       <h2 className={styles.sectionTitle}>Statistik</h2>
       <div className={styles.statGrid}>
         <div className={styles.statCard}>
-          <span className={styles.statValue}>{countRegistered(data.parcels)}</span>
+          <span className={styles.statValue}>{data.stats.checkIns}</span>
           <span className={styles.statLabel}>Indleverede pakker</span>
         </div>
         <div className={styles.statCard}>
-          <span className={styles.statValue}>{countByStatus(data.parcels, 'udleveret')}</span>
+          <span className={styles.statValue}>{data.stats.deliveryTimesMs.length}</span>
           <span className={styles.statLabel}>Udleverede pakker</span>
         </div>
         <div className={styles.statCard}>

@@ -35,10 +35,6 @@ export function countByStatus(
   return Object.values(parcels).filter((parcel) => parcel.status === status).length
 }
 
-export function countRegistered(parcels: Record<string, Parcel>): number {
-  return Object.values(parcels).filter((parcel) => parcel.registeredAt !== null).length
-}
-
 export function averageDeliveryTimeMs(deliveryTimesMs: number[]): number {
   return deliveryTimesMs.length > 0
     ? deliveryTimesMs.reduce((sum, ms) => sum + ms, 0) / deliveryTimesMs.length

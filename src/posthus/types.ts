@@ -11,6 +11,8 @@ export interface Parcel {
 }
 
 export interface PosthusStats {
+  // Antal indleveringer. En udleveret pakke kan indleveres igen og tælles hver gang.
+  checkIns: number
   wrongParcels: number
   // Tid fra seddel scannet til pakke udleveret, i millisekunder.
   deliveryTimesMs: number[]
@@ -26,7 +28,7 @@ export interface PosthusData {
 export type PosthusActivity =
   | { kind: 'idle' }
   | { kind: 'received'; parcelCode: string; until: number }
-  | { kind: 'duplicate'; parcelCode: string; status: ParcelStatus; until: number }
+  | { kind: 'duplicate'; parcelCode: string; until: number }
   | { kind: 'unknown'; code: string; until: number }
   | {
       kind: 'pickup'
