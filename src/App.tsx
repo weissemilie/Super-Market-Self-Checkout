@@ -6,8 +6,6 @@ import { useErrorEngine } from './errors/useErrorEngine'
 import { useErrorGeneratorConfig } from './errors/useErrorGeneratorConfig'
 import { LampProvider } from './lamp/LampProvider'
 import { useLampSync } from './lamp/useLampSync'
-import { ErrorManual } from './print/ErrorManual'
-import { PrintCards } from './print/PrintCards'
 import { ScanDebug } from './scanner/ScanDebug'
 import { DoneScreen } from './screens/DoneScreen'
 import { ErrorOverlay } from './screens/ErrorOverlay'
@@ -16,20 +14,8 @@ import { PayingScreen } from './screens/PayingScreen'
 import { ShoppingScreen } from './screens/ShoppingScreen'
 import { TopBar } from './screens/TopBar'
 import { WelcomeScreen } from './screens/WelcomeScreen'
-import { useHashRoute } from './useHashRoute'
 
 function App() {
-  const hash = useHashRoute()
-
-  // Printsiderne skal kunne vises uden at kassens tastaturlyttere og scanner
-  // overhovedet mountes, så de må ikke ligge inde i AppContent/LampProvider.
-  if (hash === '#print') {
-    return <PrintCards />
-  }
-  if (hash === '#manual') {
-    return <ErrorManual />
-  }
-
   return (
     <LampProvider>
       <AppContent />

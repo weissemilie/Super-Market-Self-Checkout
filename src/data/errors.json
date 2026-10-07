@@ -5,7 +5,7 @@
     "message": "Der ligger en vare i posepladsen, som ikke er betalt.",
     "lampColor": "yellow",
     "solution": ["KORT01"],
-    "hint": "Scan personalekortet for at frigive posepladsen.",
+    "hint": "Prøv at kigge efter afsnittet om posepladsen i manualen.",
     "weight": 3
   },
   {
@@ -14,7 +14,7 @@
     "message": "Stregkoden kan ikke genkendes af systemet.",
     "lampColor": "yellow",
     "solution": ["KORT01", "KORT03"],
-    "hint": "Scan personalekort og derefter kortet til manuel vare.",
+    "hint": "Prøv at kigge efter afsnittet om ukendte varer i manualen.",
     "weight": 3
   },
   {
@@ -23,7 +23,7 @@
     "message": "Varen kræver godkendelse af kundens alder.",
     "lampColor": "red",
     "solution": ["KORT01", "KORT04"],
-    "hint": "Scan personalekort og derefter kortet til aldersgodkendelse.",
+    "hint": "Prøv at kigge efter afsnittet om aldersgrænser i manualen.",
     "weight": 2
   },
   {
@@ -32,7 +32,7 @@
     "message": "Vægten i posepladsen stemmer ikke med varen.",
     "lampColor": "yellow",
     "solution": ["KORT01", "KORT05"],
-    "hint": "Scan personalekort og derefter kortet til vægt nulstil.",
+    "hint": "Prøv at kigge efter afsnittet om vægten i posepladsen i manualen.",
     "weight": 2
   },
   {
@@ -41,7 +41,7 @@
     "message": "Printeren er løbet tør for kvitteringspapir.",
     "lampColor": "blue",
     "solution": ["KORT02", "KORT06"],
-    "hint": "Scan teknikerkort og derefter kortet for skiftet papir.",
+    "hint": "Prøv at kigge efter afsnittet om kvitteringsprinteren i manualen.",
     "weight": 1
   },
   {
@@ -50,7 +50,7 @@
     "message": "Den indscannede rabatkupon kan ikke godkendes.",
     "lampColor": "yellow",
     "solution": ["KORT01", "KORT07"],
-    "hint": "Scan personalekort og derefter kortet til tilsidesættelse af kupon.",
+    "hint": "Prøv at kigge efter afsnittet om rabatkuponer i manualen.",
     "weight": 2
   },
   {
@@ -59,7 +59,7 @@
     "message": "Systemet har registreret for mange varer på kort tid.",
     "lampColor": "red",
     "solution": ["KORT02", "KORT08", "KORT01"],
-    "hint": "Scan teknikerkort, derefter genstart kasse og bekræft med personalekort.",
+    "hint": "Prøv at kigge efter afsnittet om en overbelastet kasse i manualen.",
     "weight": 1
   },
   {
@@ -68,7 +68,7 @@
     "message": "Kortterminalen reagerer ikke på betalingen.",
     "lampColor": "red",
     "solution": ["KORT02", "KORT09", "KORT10"],
-    "hint": "Scan teknikerkort, genstart terminal og bekræft.",
+    "hint": "Prøv at kigge efter afsnittet om teknisk udstyr i manualen.",
     "weight": 1
   }
 ]

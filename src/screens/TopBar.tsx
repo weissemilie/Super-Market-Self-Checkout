@@ -19,7 +19,7 @@ export function TopBar() {
     <header className={styles.topBar}>
       <div className={styles.brand}>
         <CartLogo className={styles.cartIcon} />
-        <span className={styles.name}>Spejder Super</span>
+        <span className={styles.name}>Super Super Market</span>
       </div>
       <div className={styles.rightGroup}>
         <MockLampView />

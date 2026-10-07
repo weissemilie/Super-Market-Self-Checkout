@@ -66,7 +66,7 @@ export function AdminPanel({ open, state, dispatch, errorGenerator }: AdminPanel
 
         <footer className={styles.footer}>
           <a
-            href="#print"
+            href="/Super%20Super%20Market%20Personalekort.pdf"
             target="_blank"
             rel="noopener noreferrer"
             className={styles.footerLink}
@@ -74,7 +74,7 @@ export function AdminPanel({ open, state, dispatch, errorGenerator }: AdminPanel
             Print personalekort
           </a>
           <a
-            href="#manual"
+            href="/Super%20Super%20Market%20Fejlmanual.pdf"
             target="_blank"
             rel="noopener noreferrer"
             className={styles.footerLink}
