@@ -37,6 +37,13 @@ describe('PostSyd i App', () => {
     expect(loadPosthusData().parcels.PAKKE001.status).toBe('i biksen')
   })
 
+  it('indleverer en pakke ud fra den printede EAN-13 stregkode og viser den interne kode', () => {
+    render(<App />)
+    scanCode('5702000000015')
+    expect(screen.getByText('Pakken er modtaget')).toBeTruthy()
+    expect(screen.getAllByText('PAKKE001').length).toBeGreaterThan(0)
+  })
+
   it('viser ikke pakkenummeret på sedlen under udlevering', () => {
     const data = createEmptyData()
     data.parcels.PAKKE003 = {

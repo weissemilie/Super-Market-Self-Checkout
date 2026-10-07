@@ -9,6 +9,7 @@ import { useErrorEngine } from './errors/useErrorEngine'
 import { useErrorGeneratorConfig } from './errors/useErrorGeneratorConfig'
 import { LampProvider } from './lamp/LampProvider'
 import { useLampSync } from './lamp/useLampSync'
+import { parseCode } from './posthus/codes'
 import { usePosthus } from './posthus/usePosthus'
 import { ScanDebug } from './scanner/ScanDebug'
 import { DoneScreen } from './screens/DoneScreen'
@@ -33,8 +34,8 @@ function App() {
 }
 
 function parcelCodeKind(code: string): string {
-  if (code.startsWith('PAKKE')) return 'Pakke'
-  if (code.startsWith('SEDDEL')) return 'Seddel'
+  const parsed = parseCode(code)
+  if (parsed) return parsed.kind === 'parcel' ? 'Pakke' : 'Seddel'
   if (code === 'MESTER') return 'Personalekort'
   return 'Ukendt'
 }
