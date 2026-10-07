@@ -22,10 +22,10 @@ afterEach(() => {
   window.history.pushState({}, '', '/')
 })
 
-describe('Posthus i App', () => {
-  it('viser posthuset og titlen i topbjælken', () => {
+describe('PostSyd i App', () => {
+  it('viser PostSyd og titlen i topbjælken', () => {
     render(<App />)
-    expect(screen.getByText('Super Super Market · Posthus')).toBeTruthy()
+    expect(screen.getByText('PostSyd')).toBeTruthy()
     expect(screen.getByText('Indlevering')).toBeTruthy()
     expect(screen.getByText('Udlevering')).toBeTruthy()
   })
@@ -58,7 +58,7 @@ describe('Posthus i App', () => {
     render(<App />)
     scanCode('MESTER')
     expect(screen.getByText('Registrer 10 tilfældige pakker')).toBeTruthy()
-    expect(screen.getByText('Nulstil posthus')).toBeTruthy()
+    expect(screen.getByText('Nulstil PostSyd')).toBeTruthy()
   })
 
   it('afdeling uden posthus viser kassen', () => {
