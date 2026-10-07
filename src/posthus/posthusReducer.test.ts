@@ -59,19 +59,41 @@ describe('posthusReducer', () => {
       const first = run(createInitialState(), scan('PAKKE001', 1000))
       const second = run(first, scan('PAKKE001', 2000))
       expect(second.parcels.PAKKE001).toEqual(first.parcels.PAKKE001)
-      expect(second.activity).toMatchObject({ kind: 'duplicate', status: 'i biksen' })
+      expect(second.activity).toMatchObject({ kind: 'duplicate', parcelCode: 'PAKKE001' })
+      expect(second.stats.checkIns).toBe(1)
     })
 
-    it('afviser indlevering af en udleveret pakke', () => {
-      const delivered = run(
+    it('tillader at en udleveret pakke indleveres igen og genbruges', () => {
+      const reused = run(
         createInitialState(),
         scan('PAKKE001', 1000),
         scan('SEDDEL001', 2000),
         scan('PAKKE001', 3000),
         scan('PAKKE001', 4000),
       )
-      expect(delivered.parcels.PAKKE001.status).toBe('udleveret')
-      expect(delivered.activity).toMatchObject({ kind: 'duplicate', status: 'udleveret' })
+      expect(reused.parcels.PAKKE001).toEqual({
+        code: 'PAKKE001',
+        status: 'i biksen',
+        registeredAt: 4000,
+        deliveredAt: null,
+      })
+      expect(reused.activity).toMatchObject({ kind: 'received', parcelCode: 'PAKKE001' })
+      expect(reused.stats.checkIns).toBe(2)
+    })
+
+    it('kan udleveres igen efter genbrug', () => {
+      const state = run(
+        createInitialState(),
+        scan('PAKKE001', 1000),
+        scan('SEDDEL001', 2000),
+        scan('PAKKE001', 3000),
+        scan('PAKKE001', 4000),
+        scan('SEDDEL001', 5000),
+      )
+      expect(state.activity).toMatchObject({ kind: 'pickup', slipCode: 'SEDDEL001' })
+      const done = run(state, scan('PAKKE001', 6000))
+      expect(done.parcels.PAKKE001).toMatchObject({ status: 'udleveret', deliveredAt: 6000 })
+      expect(done.stats.deliveryTimesMs).toEqual([1000, 1000])
     })
 
     it('melder ukendte koder uden at registrere noget', () => {
@@ -202,7 +224,7 @@ describe('posthusReducer', () => {
         { type: 'RESET' },
       )
       expect(state.adminOpen).toBe(true)
-      expect(state.stats).toEqual({ wrongParcels: 0, deliveryTimesMs: [] })
+      expect(state.stats).toEqual({ checkIns: 0, wrongParcels: 0, deliveryTimesMs: [] })
       expect(registeredParcelsSorted(state.parcels)).toHaveLength(0)
     })
   })

@@ -20,7 +20,7 @@ export function createEmptyData(): PosthusData {
   for (const code of allParcelCodes()) {
     parcels[code] = { code, status: 'ikke ankommet', registeredAt: null, deliveredAt: null }
   }
-  return { parcels, stats: { wrongParcels: 0, deliveryTimesMs: [] } }
+  return { parcels, stats: { checkIns: 0, wrongParcels: 0, deliveryTimesMs: [] } }
 }
 
 export function createInitialState(data: PosthusData = createEmptyData()): PosthusState {
@@ -35,22 +35,24 @@ function withParcel(state: PosthusState, parcel: Parcel): Record<string, Parcel>
   return { ...state.parcels, [parcel.code]: parcel }
 }
 
+function enterBin(parcel: Parcel, now: number): Parcel {
+  return { ...parcel, status: 'i biksen', registeredAt: now, deliveredAt: null }
+}
+
 function checkInParcel(state: PosthusState, code: string, now: number): PosthusState {
   const parcel = state.parcels[code]
-  if (parcel.status !== 'ikke ankommet') {
+  // Pakker i biksen kan ikke indleveres igen. Udleverede pakker kan, så de
+  // samme pakker kan genbruges.
+  if (parcel.status === 'i biksen') {
     return {
       ...state,
-      activity: {
-        kind: 'duplicate',
-        parcelCode: code,
-        status: parcel.status,
-        until: now + DUPLICATE_VISIBLE_MS,
-      },
+      activity: { kind: 'duplicate', parcelCode: code, until: now + DUPLICATE_VISIBLE_MS },
     }
   }
   return {
     ...state,
-    parcels: withParcel(state, { ...parcel, status: 'i biksen', registeredAt: now }),
+    parcels: withParcel(state, enterBin(parcel, now)),
+    stats: { ...state.stats, checkIns: state.stats.checkIns + 1 },
     activity: { kind: 'received', parcelCode: code, until: now + RECEIVED_VISIBLE_MS },
   }
 }
@@ -164,13 +166,19 @@ function tick(state: PosthusState, now: number): PosthusState {
 
 function registerParcels(state: PosthusState, codes: string[], now: number): PosthusState {
   const parcels = { ...state.parcels }
+  let registered = 0
   for (const code of codes) {
     const parcel = parcels[code]
     if (parcel && parcel.status === 'ikke ankommet') {
-      parcels[code] = { ...parcel, status: 'i biksen', registeredAt: now }
+      parcels[code] = enterBin(parcel, now)
+      registered++
     }
   }
-  return { ...state, parcels }
+  return {
+    ...state,
+    parcels,
+    stats: { ...state.stats, checkIns: state.stats.checkIns + registered },
+  }
 }
 
 export function posthusReducer(state: PosthusState, action: PosthusAction): PosthusState {
