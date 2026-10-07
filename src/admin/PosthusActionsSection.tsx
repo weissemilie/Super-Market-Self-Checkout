@@ -12,7 +12,7 @@ export function PosthusActionsSection({
 }: PosthusActionsSectionProps) {
   function handleReset() {
     const confirmed = window.confirm(
-      'Nulstil posthuset? Alle pakker og al statistik nulstilles.',
+      'Nulstil PostSyd? Alle pakker og al statistik nulstilles.',
     )
     if (confirmed) {
       dispatch({ type: 'RESET' })
@@ -27,7 +27,7 @@ export function PosthusActionsSection({
           Registrer 10 tilfældige pakker
         </button>
         <button type="button" className={styles.resetButton} onClick={handleReset}>
-          Nulstil posthus
+          Nulstil PostSyd
         </button>
       </div>
     </section>

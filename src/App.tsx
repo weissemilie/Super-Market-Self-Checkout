@@ -15,6 +15,9 @@ import { DoneScreen } from './screens/DoneScreen'
 import { ErrorOverlay } from './screens/ErrorOverlay'
 import { FlashBanner } from './screens/FlashBanner'
 import { PayingScreen } from './screens/PayingScreen'
+import { PostSydLogo } from './screens/posthus/PostSydLogo'
+import themeStyles from './screens/posthus/PostSydTheme.module.css'
+import topBarStyles from './screens/TopBar.module.css'
 import { PosthusScreen } from './screens/posthus/PosthusScreen'
 import { ShoppingScreen } from './screens/ShoppingScreen'
 import { TopBar } from './screens/TopBar'
@@ -47,8 +50,8 @@ function PosthusApp() {
   )
 
   return (
-    <div className="app">
-      <TopBar department="Posthus" />
+    <div className={`app ${themeStyles.theme}`}>
+      <TopBar title="PostSyd" logo={<PostSydLogo className={topBarStyles.cartIcon} />} />
       <div className="screenArea">
         <PosthusScreen state={state} dispatch={dispatch} />
       </div>

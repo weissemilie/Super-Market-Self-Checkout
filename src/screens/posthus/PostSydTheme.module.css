@@ -1,0 +1,14 @@
+/* PostSyd-farver. Overstyrer farvevariablerne for hele afdelingen, så
+   topbjælke og instruktørpanel følger med. */
+.theme {
+  --color-primary: #00a0d6;
+  --color-primary-dark: #00608f;
+  --color-primary-contrast: #ffffff;
+  --color-navy: #0d234b;
+  --color-success: #1f8a4c;
+  --color-info: #00a0d6;
+  --color-surface: #eef6fb;
+  --color-border: #cfe3ef;
+  --color-text: #0d234b;
+  --color-text-muted: #55708a;
+}
