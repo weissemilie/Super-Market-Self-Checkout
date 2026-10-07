@@ -1,25 +1,64 @@
-import { useEffect } from 'react'
+import { useCallback } from 'react'
 import { AdminPanel } from './admin/AdminPanel'
+import { PosthusAdminPanel } from './admin/PosthusAdminPanel'
+import { useAdminShortcut } from './admin/useAdminShortcut'
 import './App.css'
+import { getDepartment } from './department'
 import { useCheckout } from './checkout/useCheckout'
 import { useErrorEngine } from './errors/useErrorEngine'
 import { useErrorGeneratorConfig } from './errors/useErrorGeneratorConfig'
 import { LampProvider } from './lamp/LampProvider'
 import { useLampSync } from './lamp/useLampSync'
+import { usePosthus } from './posthus/usePosthus'
 import { ScanDebug } from './scanner/ScanDebug'
 import { DoneScreen } from './screens/DoneScreen'
 import { ErrorOverlay } from './screens/ErrorOverlay'
 import { FlashBanner } from './screens/FlashBanner'
 import { PayingScreen } from './screens/PayingScreen'
+import { PosthusScreen } from './screens/posthus/PosthusScreen'
 import { ShoppingScreen } from './screens/ShoppingScreen'
 import { TopBar } from './screens/TopBar'
 import { WelcomeScreen } from './screens/WelcomeScreen'
 
 function App() {
+  const department = getDepartment(window.location.search)
   return (
     <LampProvider>
-      <AppContent />
+      {department === 'posthus' ? <PosthusApp /> : <AppContent />}
     </LampProvider>
+  )
+}
+
+function parcelCodeKind(code: string): string {
+  if (code.startsWith('PAKKE')) return 'Pakke'
+  if (code.startsWith('SEDDEL')) return 'Seddel'
+  if (code === 'MESTER') return 'Personalekort'
+  return 'Ukendt'
+}
+
+function PosthusApp() {
+  const { state, handleScan, recentScans, dispatch, registerRandomParcels } = usePosthus()
+  const adminOpen = state.adminOpen
+  useAdminShortcut(
+    useCallback(
+      () => dispatch({ type: adminOpen ? 'CLOSE_ADMIN' : 'OPEN_ADMIN' }),
+      [dispatch, adminOpen],
+    ),
+  )
+
+  return (
+    <div className="app">
+      <TopBar department="Posthus" />
+      <div className="screenArea">
+        <PosthusScreen state={state} dispatch={dispatch} />
+      </div>
+      <ScanDebug recentScans={recentScans} simulateScan={handleScan} classify={parcelCodeKind} />
+      <PosthusAdminPanel
+        state={state}
+        dispatch={dispatch}
+        onRegisterRandom={registerRandomParcels}
+      />
+    </div>
   )
 }
 
@@ -30,26 +69,13 @@ function AppContent() {
   const errorGenerator = useErrorGeneratorConfig()
   useErrorEngine(state, dispatch, errorGenerator.effectiveConfig)
 
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      const isAdminToggle =
-        event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'a'
-      if (!isAdminToggle) {
-        return
-      }
-
-      const target = event.target
-      const isInputFocused =
-        target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
-      if (!isInputFocused) {
-        event.preventDefault()
-      }
-
-      dispatch({ type: state.adminOpen ? 'CLOSE_ADMIN' : 'OPEN_ADMIN' })
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [dispatch, state.adminOpen])
+  const adminOpen = state.adminOpen
+  useAdminShortcut(
+    useCallback(
+      () => dispatch({ type: adminOpen ? 'CLOSE_ADMIN' : 'OPEN_ADMIN' }),
+      [dispatch, adminOpen],
+    ),
+  )
 
   // Mens mode er ERROR, skal skærmen bagved (shopping eller betaling) blive
   // stående, så ErrorOverlay kan lægge sig oven på den og vise det rigtige
