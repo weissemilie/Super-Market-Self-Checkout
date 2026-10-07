@@ -210,6 +210,20 @@
   margin: 0 0 16px;
 }
 
+.lampError {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-red);
+  margin: 0 0 12px;
+}
+
+.testButtonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .resetButton {
   font-size: 18px;
   font-weight: 700;

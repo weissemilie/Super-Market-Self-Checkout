@@ -1,5 +1,10 @@
 import type { LampColor } from '../data'
-import type { LampController, LampPattern, LampState } from './LampController'
+import type {
+  LampConnectionStatus,
+  LampController,
+  LampPattern,
+  LampState,
+} from './LampController'
 
 const OFF_STATE: LampState = { color: 'off', pattern: 'steady' }
 
@@ -11,8 +16,13 @@ export class MockLamp implements LampController {
     // Ingen rigtig forbindelse at oprette - lampen er allerede en mock.
   }
 
-  isConnected(): boolean {
-    return true
+  getConnectionStatus(): LampConnectionStatus {
+    return 'connected'
+  }
+
+  subscribeConnectionStatus(): () => void {
+    // Status ændrer sig aldrig for en mock, så der er intet at melde.
+    return () => {}
   }
 
   show(color: LampColor, pattern: LampPattern): void {
