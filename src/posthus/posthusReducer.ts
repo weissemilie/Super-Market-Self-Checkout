@@ -164,23 +164,6 @@ function tick(state: PosthusState, now: number): PosthusState {
   return now >= activity.until ? { ...state, activity: IDLE } : state
 }
 
-function registerParcels(state: PosthusState, codes: string[], now: number): PosthusState {
-  const parcels = { ...state.parcels }
-  let registered = 0
-  for (const code of codes) {
-    const parcel = parcels[code]
-    if (parcel && parcel.status === 'ikke ankommet') {
-      parcels[code] = enterBin(parcel, now)
-      registered++
-    }
-  }
-  return {
-    ...state,
-    parcels,
-    stats: { ...state.stats, checkIns: state.stats.checkIns + registered },
-  }
-}
-
 export function posthusReducer(state: PosthusState, action: PosthusAction): PosthusState {
   switch (action.type) {
     case 'SCAN':
@@ -189,8 +172,6 @@ export function posthusReducer(state: PosthusState, action: PosthusAction): Post
       return tick(state, action.now)
     case 'CANCEL':
       return { ...state, activity: IDLE }
-    case 'REGISTER_PARCELS':
-      return registerParcels(state, action.codes, action.now)
     case 'RESET':
       return { ...createInitialState(), adminOpen: state.adminOpen }
     case 'OPEN_ADMIN':

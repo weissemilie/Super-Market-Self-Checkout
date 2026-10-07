@@ -26,9 +26,13 @@ import { WelcomeScreen } from './screens/WelcomeScreen'
 
 function App() {
   const department = getDepartment(window.location.search)
+  // PostSyd har ingen lampe og skal ikke kende til Arduino.
+  if (department === 'posthus') {
+    return <PosthusApp />
+  }
   return (
     <LampProvider>
-      {department === 'posthus' ? <PosthusApp /> : <AppContent />}
+      <AppContent />
     </LampProvider>
   )
 }
@@ -41,7 +45,7 @@ function parcelCodeKind(code: string): string {
 }
 
 function PosthusApp() {
-  const { state, handleScan, recentScans, dispatch, registerRandomParcels } = usePosthus()
+  const { state, handleScan, recentScans, dispatch } = usePosthus()
   const adminOpen = state.adminOpen
   useAdminShortcut(
     useCallback(
@@ -52,16 +56,16 @@ function PosthusApp() {
 
   return (
     <div className={`app ${themeStyles.theme}`}>
-      <TopBar title="PostSyd" logo={<PostSydLogo className={topBarStyles.cartIcon} />} />
+      <TopBar
+        title="PostSyd"
+        logo={<PostSydLogo className={topBarStyles.cartIcon} />}
+        showLamp={false}
+      />
       <div className="screenArea">
         <PosthusScreen state={state} dispatch={dispatch} />
       </div>
       <ScanDebug recentScans={recentScans} simulateScan={handleScan} classify={parcelCodeKind} />
-      <PosthusAdminPanel
-        state={state}
-        dispatch={dispatch}
-        onRegisterRandom={registerRandomParcels}
-      />
+      <PosthusAdminPanel state={state} dispatch={dispatch} />
     </div>
   )
 }

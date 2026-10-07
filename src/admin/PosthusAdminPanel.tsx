@@ -1,16 +1,14 @@
 import type { PosthusAction, PosthusState } from '../posthus/types'
 import styles from './AdminPanel.module.css'
-import { LampSection } from './LampSection'
 import { PosthusActionsSection } from './PosthusActionsSection'
 import { PosthusStatsSection } from './PosthusStatsSection'
 
 interface PosthusAdminPanelProps {
   state: PosthusState
   dispatch: (action: PosthusAction) => void
-  onRegisterRandom: () => void
 }
 
-export function PosthusAdminPanel({ state, dispatch, onRegisterRandom }: PosthusAdminPanelProps) {
+export function PosthusAdminPanel({ state, dispatch }: PosthusAdminPanelProps) {
   if (!state.adminOpen) {
     return null
   }
@@ -31,8 +29,7 @@ export function PosthusAdminPanel({ state, dispatch, onRegisterRandom }: Posthus
 
         <div className={styles.sections}>
           <PosthusStatsSection data={state} />
-          <PosthusActionsSection dispatch={dispatch} onRegisterRandom={onRegisterRandom} />
-          <LampSection />
+          <PosthusActionsSection dispatch={dispatch} />
         </div>
       </div>
     </div>

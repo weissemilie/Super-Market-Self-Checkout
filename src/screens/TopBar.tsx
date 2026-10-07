@@ -11,9 +11,11 @@ interface TopBarProps {
   // Afdelinger med eget navn og logo, fx PostSyd. Standard er kassen.
   title?: string
   logo?: ReactNode
+  // Afdelinger uden lampe (PostSyd) skjuler den.
+  showLamp?: boolean
 }
 
-export function TopBar({ title = 'Super Super Market', logo }: TopBarProps) {
+export function TopBar({ title = 'Super Super Market', logo, showLamp = true }: TopBarProps) {
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export function TopBar({ title = 'Super Super Market', logo }: TopBarProps) {
         <span className={styles.name}>{title}</span>
       </div>
       <div className={styles.rightGroup}>
-        <MockLampView />
+        {showLamp && <MockLampView />}
         <span className={styles.clock}>{formatClock(now)}</span>
       </div>
     </header>

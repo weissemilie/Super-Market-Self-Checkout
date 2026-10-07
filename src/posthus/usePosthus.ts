@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { useBarcodeScanner } from '../scanner/useBarcodeScanner'
 import { beep, errorAlarm, success } from '../sound'
-import { pickRandomUnregistered } from './randomParcels'
 import { createInitialState, posthusReducer } from './posthusReducer'
 import { loadPosthusData, savePosthusData } from './posthusStorage'
 import type { PosthusAction, PosthusState } from './types'
 
 const TICK_INTERVAL_MS = 500
 const MAX_RECENT_SCANS = 10
-const RANDOM_PARCEL_COUNT = 10
 
 export interface RecentScan {
   id: number
@@ -20,7 +18,6 @@ export interface UsePosthusResult {
   state: PosthusState
   dispatch: (action: PosthusAction) => void
   handleScan: (code: string) => void
-  registerRandomParcels: () => void
   recentScans: RecentScan[]
 }
 
@@ -58,11 +55,6 @@ export function usePosthus(): UsePosthusResult {
     return () => clearInterval(interval)
   }, [])
 
-  const registerRandomParcels = useCallback(() => {
-    const codes = pickRandomUnregistered(state.parcels, RANDOM_PARCEL_COUNT, Math.random)
-    dispatch({ type: 'REGISTER_PARCELS', codes, now: Date.now() })
-  }, [state.parcels])
-
   // Lyd efter hvad skærmen viser: succes ved modtagelse og udlevering, alarm
   // ved dobbelt indlevering, ukendt kode og forkert pakke.
   const previousActivityRef = useRef(state.activity)
@@ -86,5 +78,5 @@ export function usePosthus(): UsePosthusResult {
     }
   }, [state.activity])
 
-  return { state, dispatch, handleScan, registerRandomParcels, recentScans }
+  return { state, dispatch, handleScan, recentScans }
 }

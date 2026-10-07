@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseCode } from './codes'
 import { createInitialState, posthusReducer } from './posthusReducer'
-import { pickRandomUnregistered } from './randomParcels'
 import { registeredParcelsSorted } from './parcelStatus'
 import type { PosthusAction, PosthusState } from './types'
 
@@ -203,17 +202,6 @@ describe('posthusReducer', () => {
       expect(state.parcels.PAKKE001.status).toBe('ikke ankommet')
     })
 
-    it('registrerer pakker og springer allerede registrerede over', () => {
-      const start = run(createInitialState(), scan('PAKKE001', 1000))
-      const state = run(start, {
-        type: 'REGISTER_PARCELS',
-        codes: ['PAKKE001', 'PAKKE002'],
-        now: 5000,
-      })
-      expect(state.parcels.PAKKE001.registeredAt).toBe(1000)
-      expect(state.parcels.PAKKE002).toMatchObject({ status: 'i biksen', registeredAt: 5000 })
-    })
-
     it('nulstiller pakker og statistik men holder panelet åbent', () => {
       const state = run(
         createInitialState(),
@@ -245,22 +233,5 @@ describe('registeredParcelsSorted', () => {
       'PAKKE001',
       'PAKKE002',
     ])
-  })
-})
-
-describe('pickRandomUnregistered', () => {
-  it('vælger forskellige pakker der ikke er ankommet', () => {
-    const start = run(createInitialState(), scan('PAKKE001', 1000))
-    let seed = 0
-    const random = () => (seed++ % 7) / 7
-    const picked = pickRandomUnregistered(start.parcels, 10, random)
-    expect(picked).toHaveLength(10)
-    expect(new Set(picked).size).toBe(10)
-    expect(picked).not.toContain('PAKKE001')
-  })
-
-  it('giver færre end ønsket, når der ikke er flere tilbage', () => {
-    const start = createInitialState()
-    expect(pickRandomUnregistered(start.parcels, 100, () => 0.99)).toHaveLength(40)
   })
 })
