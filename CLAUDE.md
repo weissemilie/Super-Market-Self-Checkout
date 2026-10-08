@@ -2,7 +2,7 @@
 Simulator af en selvbetjeningskasse i et supermarked til en spejderaktivitet. Kører som React app med TypeScript og Vite i Chrome i fuldskærm på en bærbar computer.
 
 # Hardware
-USB stregkodescannere opfører sig som et tastatur og sender stregkodens tegn efterfulgt af Enter. En Arduino med en lampe tilsluttes senere via Web Serial API.
+USB stregkodescannere opfører sig som et tastatur og sender stregkodens tegn efterfulgt af Enter. Hver kasse er forbundet via USB til et ESP32 udviklingsboard, der styrer et Seeed Grove Relay. Relæet kan kun tænde og slukke, og det styrer en rød lampe på lav spænding. Appen taler selv med ESP32'en over Web Serial API (115200 baud) - der er intet separat program på laptoppen.
 
 # Spillet
 Spejderne er kunder og scanner varer. Med jævne mellemrum opstår en tilfældig fejl. Kassen låses, lampen lyser, og skærmen viser en fejlkode. Spejderne skal scanne de rigtige personalekort i den rigtige rækkefølge for at låse kassen op. Et forkert kort nulstiller rækkefølgen og giver en kort straf.

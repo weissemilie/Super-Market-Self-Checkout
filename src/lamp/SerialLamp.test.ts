@@ -1,3 +1,4 @@
+/** @vitest-environment jsdom */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SerialLamp } from './SerialLamp'
 import type { SerialPortLike, SerialReader, SerialWriter } from './SerialLamp'
@@ -5,6 +6,7 @@ import type { SerialPortLike, SerialReader, SerialWriter } from './SerialLamp'
 interface FakePort {
   port: SerialPortLike
   written: string[]
+  signalCalls: Array<{ dataTerminalReady?: boolean; requestToSend?: boolean }>
   triggerDisconnect: () => void
 }
 
@@ -13,10 +15,11 @@ interface ReadResult {
   done: boolean
 }
 
-// pongAfterMs: hvornår (i ms efter porten åbnes) Arduinoen "svarer" PONG.
+// pongAfterMs: hvornår (i ms efter porten åbnes) ESP32'en "svarer" PONG.
 // undefined betyder den aldrig svarer (bruges til timeout-testen).
 function createFakePort(options: { pongAfterMs?: number } = {}): FakePort {
   const written: string[] = []
+  const signalCalls: Array<{ dataTerminalReady?: boolean; requestToSend?: boolean }> = []
   const disconnectListeners: Array<() => void> = []
   const dataQueue: Uint8Array[] = []
   let pendingResolve: ((result: ReadResult) => void) | null = null
@@ -63,6 +66,9 @@ function createFakePort(options: { pongAfterMs?: number } = {}): FakePort {
   const port: SerialPortLike = {
     async open() {},
     async close() {},
+    async setSignals(signals) {
+      signalCalls.push(signals)
+    },
     readable: { getReader: () => reader },
     writable: { getWriter: () => writer },
     addEventListener(type, listener) {
@@ -83,6 +89,7 @@ function createFakePort(options: { pongAfterMs?: number } = {}): FakePort {
   return {
     port,
     written,
+    signalCalls,
     triggerDisconnect() {
       for (const listener of disconnectListeners) {
         listener()
@@ -96,14 +103,15 @@ afterEach(() => {
 })
 
 describe('SerialLamp', () => {
-  it('forbinder og sender PING, når Arduinoen svarer PONG med det samme', async () => {
-    const { port, written } = createFakePort({ pongAfterMs: 0 })
+  it('forbinder, sætter DTR/RTS false og sender PING, når ESP32 svarer PONG med det samme', async () => {
+    const { port, written, signalCalls } = createFakePort({ pongAfterMs: 0 })
     const lamp = new SerialLamp(port)
 
     await lamp.connect()
 
     expect(lamp.getConnectionStatus()).toBe('connected')
     expect(written).toEqual(['PING\n'])
+    expect(signalCalls).toEqual([{ dataTerminalReady: false, requestToSend: false }])
   })
 
   it('bliver ved med at sende PING hvert halve sekund og forbinder, hvis PONG først kommer efter 3 sekunder', async () => {
@@ -137,7 +145,7 @@ describe('SerialLamp', () => {
     expect(lamp.getConnectionStatus()).toBe('disconnected')
   })
 
-  it('sender kun en kommando til porten, når lampens tilstand faktisk ændrer sig', async () => {
+  it('oversætter enhver farve/mønster til ON og slukket til OFF, og sender kun når det ændrer sig', async () => {
     const { port, written } = createFakePort({ pongAfterMs: 0 })
     const lamp = new SerialLamp(port)
     await lamp.connect()
@@ -145,11 +153,58 @@ describe('SerialLamp', () => {
 
     lamp.show('red', 'steady')
     lamp.show('red', 'steady') // samme tilstand igen - ingen ny kommando
-    lamp.show('blue', 'blink')
+    lamp.show('blue', 'blink') // stadig tændt - relæet skal ikke sende ON igen
     lamp.off()
     lamp.off() // samme tilstand igen - ingen ny kommando
+    lamp.show('yellow', 'fast') // tændes igen
 
-    expect(written).toEqual(['LAMP RED STEADY\n', 'LAMP BLUE BLINK\n', 'LAMP OFF\n'])
+    expect(written).toEqual(['ON\n', 'OFF\n', 'ON\n'])
+  })
+
+  it('gentager den aktuelle kommando hvert 5. sekund, så længe der er forbindelse', async () => {
+    // Fake timers skal være aktive FØR connect(), da keep-alive-intervallet
+    // oprettes med setInterval inde i connect() selv.
+    vi.useFakeTimers()
+    const { port, written } = createFakePort({ pongAfterMs: 0 })
+    const lamp = new SerialLamp(port)
+
+    const connectPromise = lamp.connect()
+    await vi.advanceTimersByTimeAsync(0)
+    await connectPromise
+
+    lamp.show('red', 'steady')
+    written.length = 0 // ryd PING og den første ON fra opsætningen
+
+    await vi.advanceTimersByTimeAsync(5000)
+    await vi.advanceTimersByTimeAsync(5000)
+    await vi.advanceTimersByTimeAsync(5000)
+
+    expect(written).toEqual(['ON\n', 'ON\n', 'ON\n'])
+
+    lamp.off()
+    written.length = 0
+
+    await vi.advanceTimersByTimeAsync(5000)
+
+    expect(written).toEqual(['OFF\n'])
+  })
+
+  it('sender OFF ved pagehide og beforeunload, hvis der er forbindelse', async () => {
+    const { port, written } = createFakePort({ pongAfterMs: 0 })
+    const lamp = new SerialLamp(port)
+    await lamp.connect()
+
+    lamp.show('red', 'steady')
+    written.length = 0
+
+    window.dispatchEvent(new Event('pagehide'))
+    expect(written).toEqual(['OFF\n'])
+
+    lamp.show('red', 'steady')
+    written.length = 0
+
+    window.dispatchEvent(new Event('beforeunload'))
+    expect(written).toEqual(['OFF\n'])
   })
 
   it('melder "connection-lost" til lyttere, når porten sender disconnect', async () => {
