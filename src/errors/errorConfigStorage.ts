@@ -8,6 +8,9 @@ export interface ErrorGeneratorAdminState {
   preset: ErrorPresetName
   enabled: boolean
   enabledErrors: string[]
+  // Instruktørens egen chance for en tilfældig fejl pr. scannet vare (0 til 1).
+  // Mangler den, bruges chancen fra sværhedsgraden.
+  chancePerScan?: number
 }
 
 export const DEFAULT_ADMIN_STATE: ErrorGeneratorAdminState = {
@@ -29,7 +32,9 @@ function isValidAdminState(value: unknown): value is ErrorGeneratorAdminState {
     isValidPreset(v.preset) &&
     typeof v.enabled === 'boolean' &&
     Array.isArray(v.enabledErrors) &&
-    v.enabledErrors.every((code) => typeof code === 'string')
+    v.enabledErrors.every((code) => typeof code === 'string') &&
+    (v.chancePerScan === undefined ||
+      (typeof v.chancePerScan === 'number' && v.chancePerScan >= 0 && v.chancePerScan <= 1))
   )
 }
 

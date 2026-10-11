@@ -12,7 +12,10 @@ export interface UseErrorGeneratorConfigResult {
   enabled: boolean
   enabledErrors: string[]
   effectiveConfig: ErrorConfig
+  // Chance for en tilfældig fejl pr. scannet vare (0 til 1), efter evt. egen justering.
+  chancePerScan: number
   setPreset: (preset: ErrorPresetName) => void
+  setChancePerScan: (chance: number) => void
   setEnabled: (enabled: boolean) => void
   toggleErrorEnabled: (code: string) => void
 }
@@ -26,8 +29,14 @@ export function useErrorGeneratorConfig(): UseErrorGeneratorConfigResult {
     saveErrorGeneratorConfig(adminState)
   }, [adminState])
 
+  // Et nyt valg af sværhedsgrad nulstiller instruktørens egen justering.
   function setPreset(preset: ErrorPresetName) {
-    setAdminState((previous) => ({ ...previous, preset }))
+    setAdminState((previous) => ({ ...previous, preset, chancePerScan: undefined }))
+  }
+
+  function setChancePerScan(chance: number) {
+    const clamped = Math.min(1, Math.max(0, chance))
+    setAdminState((previous) => ({ ...previous, chancePerScan: clamped }))
   }
 
   function setEnabled(enabled: boolean) {
@@ -50,8 +59,11 @@ export function useErrorGeneratorConfig(): UseErrorGeneratorConfigResult {
     (code) => code !== 'E02' && code !== 'E03',
   )
 
+  const chancePerScan = adminState.chancePerScan ?? ERROR_PRESETS[adminState.preset].chancePerScan
+
   const effectiveConfig: ErrorConfig = {
     ...ERROR_PRESETS[adminState.preset],
+    chancePerScan,
     enabled: adminState.enabled,
     enabledErrors: sanitizedEnabledErrors,
   }
@@ -61,7 +73,9 @@ export function useErrorGeneratorConfig(): UseErrorGeneratorConfigResult {
     enabled: adminState.enabled,
     enabledErrors: sanitizedEnabledErrors,
     effectiveConfig,
+    chancePerScan,
     setPreset,
+    setChancePerScan,
     setEnabled,
     toggleErrorEnabled,
   }
