@@ -4,6 +4,7 @@ import {
   createInitialState,
   DEFAULT_SETTINGS,
   priceFromRoll,
+  RESOLVED_DISPLAY_MS,
   UNKNOWN_PRICE_MAX_DKK,
   UNKNOWN_PRICE_MIN_DKK,
 } from './checkoutReducer'
@@ -411,5 +412,25 @@ describe('checkoutReducer', () => {
     state = scan(state, MILK_BARCODE, 100)
     expect(state).toBe(stateWhileOpen)
     expect(state.cart).toEqual([])
+  })
+
+  it('udløser en fejl fra startskærmen og går bagefter til indkøb, når den er løst', () => {
+    let state = createInitialState()
+    expect(state.mode).toBe('IDLE')
+
+    state = checkoutReducer(state, { type: 'TRIGGER_ERROR', errorCode: 'E01', now: 1000 })
+    expect(state.mode).toBe('ERROR')
+    expect(state.error?.resumeMode).toBe('SHOPPING')
+
+    state = scan(state, 'KORT01', 1100)
+    state = checkoutReducer(state, { type: 'TICK', now: 1100 + RESOLVED_DISPLAY_MS })
+    expect(state.mode).toBe('SHOPPING')
+  })
+
+  it('ignorerer udløs fejl, mens der allerede er en fejl', () => {
+    let state = createInitialState()
+    state = checkoutReducer(state, { type: 'TRIGGER_ERROR', errorCode: 'E01', now: 1000 })
+    const next = checkoutReducer(state, { type: 'TRIGGER_ERROR', errorCode: 'E03', now: 1100 })
+    expect(next.error?.activeError.code).toBe('E01')
   })
 })

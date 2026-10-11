@@ -90,8 +90,9 @@ export class SerialLamp implements LampController {
   private connection: Connection | null = null
   private connecting = false
   // Ønsket tilstand (relæet kan kun tænde og slukke, så farve og mønster
-  // bruges kun til at vise lampen på skærmen). relayOn er det seneste boardet
-  // har bekræftet, og null når det er ukendt, fx lige efter en forbindelse.
+  // ikke har nogen betydning for selve lampen). relayOn er det seneste
+  // boardet har bekræftet, og null når det er ukendt, fx lige efter en
+  // forbindelse.
   private isOn = false
   private relayOn: boolean | null = null
   private sending = false

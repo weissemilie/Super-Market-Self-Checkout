@@ -8,26 +8,19 @@ const ALWAYS_ON_CODES = new Set(['E02', 'E03'])
 
 interface ErrorsSectionProps {
   errorGenerator: UseErrorGeneratorConfigResult
-  queuedErrorCode: string | null
-  onQueueError: (code: string) => void
+  onTriggerError: (code: string) => void
 }
 
-export function ErrorsSection({
-  errorGenerator,
-  queuedErrorCode,
-  onQueueError,
-}: ErrorsSectionProps) {
+export function ErrorsSection({ errorGenerator, onTriggerError }: ErrorsSectionProps) {
   const { enabledErrors, toggleErrorEnabled } = errorGenerator
 
   return (
     <section className={styles.section}>
       <h2 className={styles.sectionTitle}>Fejl</h2>
 
-      {queuedErrorCode && (
-        <p className={styles.queuedNotice}>
-          {queuedErrorCode} udløses, når panelet lukkes.
-        </p>
-      )}
+      <p className={styles.helpText}>
+        "Udløs nu" lukker panelet og starter fejlen med det samme.
+      </p>
 
       <ul className={styles.errorList}>
         {errors.map((error) => {
@@ -48,12 +41,8 @@ export function ErrorsSection({
               </label>
               <button
                 type="button"
-                className={
-                  queuedErrorCode === error.code
-                    ? `${styles.triggerButton} ${styles.triggerButtonQueued}`
-                    : styles.triggerButton
-                }
-                onClick={() => onQueueError(error.code)}
+                className={styles.triggerButton}
+                onClick={() => onTriggerError(error.code)}
               >
                 Udløs nu
               </button>

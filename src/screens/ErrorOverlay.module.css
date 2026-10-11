@@ -16,12 +16,6 @@
   height: 70px;
 }
 
-.lampCorner {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-}
-
 .code {
   font-size: 120px;
   font-weight: 900;

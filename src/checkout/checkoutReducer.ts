@@ -283,10 +283,15 @@ export function checkoutReducer(
     }
 
     case 'TRIGGER_ERROR': {
-      if (state.mode !== 'SHOPPING' && state.mode !== 'PAYING') {
-        return state
+      if (state.mode === 'PAYING') {
+        return enterError(state, action.errorCode, action.now, 'PAYING')
       }
-      return enterError(state, action.errorCode, action.now, state.mode)
+      // Fra startskærmen starter kassen i indkøb, så fejlen kan løses og
+      // kunderne kan fortsætte bagefter.
+      if (state.mode === 'SHOPPING' || state.mode === 'IDLE') {
+        return enterError({ ...state, mode: 'SHOPPING' }, action.errorCode, action.now, 'SHOPPING')
+      }
+      return state
     }
 
     case 'START_PAYMENT': {

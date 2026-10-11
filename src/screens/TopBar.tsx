@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { CartLogo } from '../CartLogo'
-import { MockLampView } from '../lamp/MockLampView'
 import styles from './TopBar.module.css'
 
 function formatClock(date: Date): string {
@@ -11,11 +10,9 @@ interface TopBarProps {
   // Afdelinger med eget navn og logo, fx PostSyd. Standard er kassen.
   title?: string
   logo?: ReactNode
-  // Afdelinger uden lampe (PostSyd) skjuler den.
-  showLamp?: boolean
 }
 
-export function TopBar({ title = 'Super Super Market', logo, showLamp = true }: TopBarProps) {
+export function TopBar({ title = 'Super Super Market', logo }: TopBarProps) {
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
@@ -30,7 +27,6 @@ export function TopBar({ title = 'Super Super Market', logo, showLamp = true }: 
         <span className={styles.name}>{title}</span>
       </div>
       <div className={styles.rightGroup}>
-        {showLamp && <MockLampView />}
         <span className={styles.clock}>{formatClock(now)}</span>
       </div>
     </header>

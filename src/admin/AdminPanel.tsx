@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react'
 import type { CheckoutAction, CheckoutState } from '../checkout/types'
 import type { UseErrorGeneratorConfigResult } from '../errors/useErrorGeneratorConfig'
 import styles from './AdminPanel.module.css'
@@ -17,21 +16,11 @@ interface AdminPanelProps {
 }
 
 export function AdminPanel({ open, state, dispatch, errorGenerator }: AdminPanelProps) {
-  const [queuedErrorCode, setQueuedErrorCode] = useState<string | null>(null)
-  const wasOpenRef = useRef(open)
-
-  // Panelet kan altid mountes (så dette virker uanset hvordan det lukkes -
-  // Ctrl+Shift+A, MESTER eller luk-knappen), og udløser den valgte fejl lige
-  // efter at det er lukket, så spejderne kan se den med det samme.
-  useEffect(() => {
-    const wasOpen = wasOpenRef.current
-    wasOpenRef.current = open
-
-    if (wasOpen && !open && queuedErrorCode) {
-      dispatch({ type: 'TRIGGER_ERROR', errorCode: queuedErrorCode, now: Date.now() })
-      setQueuedErrorCode(null)
-    }
-  }, [open, queuedErrorCode, dispatch])
+  // "Udløs nu" lukker panelet og starter fejlen med det samme.
+  function handleTriggerError(errorCode: string) {
+    dispatch({ type: 'CLOSE_ADMIN' })
+    dispatch({ type: 'TRIGGER_ERROR', errorCode, now: Date.now() })
+  }
 
   if (!open) {
     return null
@@ -56,32 +45,13 @@ export function AdminPanel({ open, state, dispatch, errorGenerator }: AdminPanel
           <DifficultySection errorGenerator={errorGenerator} />
           <ErrorsSection
             errorGenerator={errorGenerator}
-            queuedErrorCode={queuedErrorCode}
-            onQueueError={setQueuedErrorCode}
+            onTriggerError={handleTriggerError}
           />
           <UnknownItemsSection settings={state.settings} dispatch={dispatch} />
           <LampSection />
           <ResetSection dispatch={dispatch} />
         </div>
 
-        <footer className={styles.footer}>
-          <a
-            href={`${import.meta.env.BASE_URL}Super%20Super%20Market%20Personalekort.pdf`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.footerLink}
-          >
-            Print personalekort
-          </a>
-          <a
-            href={`${import.meta.env.BASE_URL}Super%20Super%20Market%20Fejlmanual.pdf`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.footerLink}
-          >
-            Fejlmanual
-          </a>
-        </footer>
       </div>
     </div>
   )
