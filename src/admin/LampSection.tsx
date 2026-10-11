@@ -55,7 +55,7 @@ export function LampSection() {
 
       {canUseSerial ? (
         <button type="button" className={styles.triggerButton} onClick={handleConnect}>
-          Forbind ESP32
+          Forbind lampe
         </button>
       ) : (
         <p className={styles.lampError}>Brug Chrome eller Edge for at forbinde lampen</p>

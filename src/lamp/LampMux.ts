@@ -14,8 +14,8 @@ import { SerialLamp } from './SerialLamp'
 type SerialLampLike = LampController & { tryReconnect(): Promise<void> }
 
 // Sender til både en MockLamp (så lampen også ses på skærmen) og en
-// SerialLamp (den rigtige Arduino, hvis den er forbundet). Hvis SerialLamp
-// fejler - fx ingen Arduino tilsluttet - fortsætter MockLamp uberørt.
+// SerialLamp (det rigtige relæ-board, hvis det er forbundet). Hvis SerialLamp
+// fejler - fx intet board tilsluttet - fortsætter MockLamp uberørt.
 export class LampMux implements LampController {
   private readonly mock: LampController
   private readonly serial: SerialLampLike

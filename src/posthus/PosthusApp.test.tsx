@@ -67,7 +67,7 @@ describe('PostSyd i App', () => {
     expect(screen.getByText('Nulstil PostSyd')).toBeTruthy()
     expect(screen.queryByText('Registrer 10 tilfældige pakker')).toBeNull()
     expect(screen.queryByText('Lampe')).toBeNull()
-    expect(screen.queryByText('Forbind Arduino')).toBeNull()
+    expect(screen.queryByText('Forbind lampe')).toBeNull()
   })
 
   it('afdeling uden posthus viser kassen', () => {

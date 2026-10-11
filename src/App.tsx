@@ -26,7 +26,7 @@ import { WelcomeScreen } from './screens/WelcomeScreen'
 
 function App() {
   const department = getDepartment(window.location.search)
-  // PostSyd har ingen lampe og skal ikke kende til Arduino.
+  // PostSyd har ingen lampe og skal ikke kende til relæ-boardet.
   if (department === 'posthus') {
     return <PosthusApp />
   }
