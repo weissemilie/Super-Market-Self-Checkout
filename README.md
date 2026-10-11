@@ -1,3 +1,9 @@
+# Hardware
+
+Lampen styres af et USB relæ-board (Seeed Wio Terminal eller Arduino MKR WiFi 1010). Al hardware, firmware, ledninger og flashing hører til Ruds repo: https://github.com/Rud-X/supersupermarked. Der ligger ingen firmware i dette repo, og den skal ikke ændres herfra.
+
+Appen taler kun med boardet gennem `SerialLamp` i `src/lamp`, efter protokollen i Ruds `README_AI.md` (`ON`, `OFF`, `STATUS` over Web Serial ved 115200 baud). Skifter protokollen i Ruds repo, er det kun `src/lamp/relayClient.ts` og `src/lamp/SerialLamp.ts`, der skal tilpasses.
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
