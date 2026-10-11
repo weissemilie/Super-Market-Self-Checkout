@@ -19,7 +19,8 @@ export function ErrorsSection({ errorGenerator, onTriggerError }: ErrorsSectionP
       <h2 className={styles.sectionTitle}>Fejl</h2>
 
       <p className={styles.helpText}>
-        "Udløs nu" lukker panelet og starter fejlen med det samme.
+        De afkrydsede fejl kan komme tilfældigt, også efter en scannet vare. "Udløs nu"
+        lukker panelet og starter fejlen med det samme.
       </p>
 
       <ul className={styles.errorList}>

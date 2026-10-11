@@ -41,4 +41,23 @@ describe('errorConfigStorage', () => {
     localStorage.setItem('spejder-super.error-generator', '{ugyldig json')
     expect(loadErrorGeneratorConfig()).toEqual(DEFAULT_ADMIN_STATE)
   })
+
+  it('gemmer og læser instruktørens egen chance pr. scannet vare', () => {
+    const custom = {
+      preset: 'normal' as const,
+      enabled: true,
+      enabledErrors: ['E01'],
+      chancePerScan: 0.4,
+    }
+    saveErrorGeneratorConfig(custom)
+    expect(loadErrorGeneratorConfig()).toEqual(custom)
+  })
+
+  it('falder tilbage til standard, hvis den gemte chance er uden for 0 til 1', () => {
+    localStorage.setItem(
+      'spejder-super.error-generator',
+      JSON.stringify({ preset: 'normal', enabled: true, enabledErrors: ['E01'], chancePerScan: 3 }),
+    )
+    expect(loadErrorGeneratorConfig()).toEqual(DEFAULT_ADMIN_STATE)
+  })
 })
