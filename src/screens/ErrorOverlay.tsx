@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { ActiveErrorState } from '../checkout/types'
 import type { LampColor } from '../data'
-import { MockLampView } from '../lamp/MockLampView'
 import { shouldShowHint } from './errorHint'
 import styles from './ErrorOverlay.module.css'
 
@@ -45,10 +44,6 @@ export function ErrorOverlay({ error }: ErrorOverlayProps) {
       className={styles.overlay}
       style={{ backgroundColor: lamp.background, color: lamp.color }}
     >
-      <div className={styles.lampCorner}>
-        <MockLampView size="large" />
-      </div>
-
       <svg
         className={styles.warningIcon}
         viewBox="0 0 64 56"

@@ -56,11 +56,7 @@ function PosthusApp() {
 
   return (
     <div className={`app ${themeStyles.theme}`}>
-      <TopBar
-        title="PostSyd"
-        logo={<PostSydLogo className={topBarStyles.cartIcon} />}
-        showLamp={false}
-      />
+      <TopBar title="PostSyd" logo={<PostSydLogo className={topBarStyles.cartIcon} />} />
       <div className="screenArea">
         <PosthusScreen state={state} dispatch={dispatch} />
       </div>
