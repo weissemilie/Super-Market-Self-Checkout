@@ -58,7 +58,7 @@ describe('useLampSync', () => {
     expect(lamp.off).toHaveBeenCalledTimes(2)
   })
 
-  it('sender lampens tilstand igen, når forbindelsen til Arduinoen genoprettes', () => {
+  it('sender lampens tilstand igen, når forbindelsen til lampen genoprettes', () => {
     const lamp = createStubLamp()
     const initialState = createInitialState()
 
@@ -69,7 +69,7 @@ describe('useLampSync', () => {
     // Testknapperne har sendt noget andet direkte til lampen.
     lamp.show('blue', 'fast')
 
-    // Forbindelsen til Arduinoen (gen)oprettes.
+    // Forbindelsen til lampen (gen)oprettes.
     for (const listener of lamp.connectionListeners) {
       listener('connected')
     }

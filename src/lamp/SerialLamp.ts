@@ -5,17 +5,25 @@ import type {
   LampPattern,
   LampState,
 } from './LampController'
+import { RelayClient } from './relayClient'
 
-// Et ESP32-board genstarter typisk, når porten åbnes, og er et par sekunder
-// om at være klar. Derfor sendes PING gentagne gange, i stedet for kun én
-// gang.
-const PING_RETRY_INTERVAL_MS = 500
-const PING_TOTAL_TIMEOUT_MS = 6000
+// Lampen sidder på et relæ-board over USB. Firmware og protokol ligger i
+// https://github.com/Rud-X/supersupermarked. Baudraten ignoreres af boardet,
+// men 115200 bruges som standard. Åbn ALDRIG porten ved 1200 baud, for det
+// genstarter boardet i bootloaderen.
+const BAUD_RATE = 115200
 
-// Så længe der er forbindelse, gentages den aktuelle kommando (ON/OFF) med
-// dette interval, så firmwaren kan se at appen stadig kører (dens egen
-// watchdog slukker relæet automatisk efter 15 sekunder uden en kommando).
-const KEEP_ALIVE_INTERVAL_MS = 5000
+// Boardet er klar kort efter porten åbnes.
+const SETTLE_AFTER_OPEN_MS = 300
+
+// Mens forbindelsen er tabt, forsøges den genoprettet med dette interval.
+const RECONNECT_INTERVAL_MS = 1000
+
+// Understøttede boards (USB VID:PID, når firmwaren kører).
+const SUPPORTED_BOARDS = [
+  { usbVendorId: 0x2886, usbProductId: 0x802d }, // Seeed Wio Terminal
+  { usbVendorId: 0x2341, usbProductId: 0x8054 }, // Arduino MKR WiFi 1010
+]
 
 const OFF_STATE: LampState = { color: 'off', pattern: 'steady' }
 
@@ -36,7 +44,7 @@ export interface SerialWriter {
 export interface SerialPortLike {
   open(options: { baudRate: number }): Promise<void>
   close(): Promise<void>
-  setSignals(signals: { dataTerminalReady?: boolean; requestToSend?: boolean }): Promise<void>
+  getInfo?(): { usbVendorId?: number; usbProductId?: number }
   readonly readable: { getReader(): SerialReader } | null
   readonly writable: { getWriter(): SerialWriter } | null
   addEventListener(type: 'disconnect', listener: () => void): void
@@ -44,7 +52,9 @@ export interface SerialPortLike {
 }
 
 interface SerialNavigatorLike {
-  requestPort(): Promise<SerialPortLike>
+  requestPort(options?: {
+    filters?: Array<{ usbVendorId: number; usbProductId: number }>
+  }): Promise<SerialPortLike>
   getPorts(): Promise<SerialPortLike[]>
 }
 
@@ -56,91 +66,41 @@ function getSerialNavigator(): SerialNavigatorLike | null {
   return nav.serial ?? null
 }
 
-function isSerialDebugEnabled(): boolean {
-  if (typeof window === 'undefined') {
-    return false
-  }
-  return new URLSearchParams(window.location.search).get('serialDebug') === '1'
+function isSupportedBoard(port: SerialPortLike): boolean {
+  const info = port.getInfo?.()
+  return SUPPORTED_BOARDS.some(
+    (board) =>
+      board.usbVendorId === info?.usbVendorId && board.usbProductId === info?.usbProductId,
+  )
 }
 
-// Sender én linje og logger den til konsollen, hvis ?serialDebug=1 er sat i
-// URL'en. Bruges for alle kommandoer: PING, ON og OFF.
-async function writeLine(writer: SerialWriter, line: string): Promise<void> {
-  if (isSerialDebugEnabled()) {
-    console.info('[SerialLamp]', line)
-  }
-  await writer.write(new TextEncoder().encode(`${line}\n`))
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-// Sender PING med jævne mellemrum (retryIntervalMs) indtil der kommer en
-// linje med PONG, eller den samlede ventetid (totalTimeoutMs) er gået. Alt
-// andet boardet måtte skrive undervejs (fx under opstart) ignoreres - der
-// kigges kun efter underteksten "PONG" i det modtagne. Afbryder den
-// igangværende læsning hvis den samlede tid løber ud, så den ikke efterlades
-// hængende.
-async function pingUntilPong(
-  writer: SerialWriter,
-  reader: SerialReader,
-  options: { retryIntervalMs: number; totalTimeoutMs: number },
-): Promise<boolean> {
-  const decoder = new TextDecoder()
-  let buffer = ''
-  const deadline = Date.now() + options.totalTimeoutMs
-
-  while (Date.now() < deadline) {
-    await writeLine(writer, 'PING')
-
-    const roundMs = Math.min(options.retryIntervalMs, deadline - Date.now())
-    let roundTimedOut = false
-    const roundTimeout = new Promise<void>((resolve) => {
-      setTimeout(() => {
-        roundTimedOut = true
-        resolve()
-      }, roundMs)
-    })
-
-    while (!roundTimedOut) {
-      const outcome = await Promise.race([
-        reader.read().then((result) => ({ kind: 'data' as const, result })),
-        roundTimeout.then(() => ({ kind: 'timeout' as const })),
-      ])
-
-      if (outcome.kind === 'timeout') {
-        break
-      }
-
-      const { value, done } = outcome.result
-      if (done) {
-        return false
-      }
-      if (value) {
-        buffer += decoder.decode(value, { stream: true })
-      }
-      if (buffer.includes('PONG')) {
-        return true
-      }
-    }
-  }
-
-  await reader.cancel().catch(() => {})
-  return false
+interface Connection {
+  port: SerialPortLike
+  writer: SerialWriter
+  reader: SerialReader
+  client: RelayClient
 }
 
 export class SerialLamp implements LampController {
   private port: SerialPortLike | null
-  private writer: SerialWriter | null = null
-  // Lampen kender til farve og mønster (til MockLampView), men relæet kan
-  // kun tænde og slukke - det er det eneste der afgør om der sendes en ny
-  // kommando over seriel.
+  private connection: Connection | null = null
+  private connecting = false
+  // Ønsket tilstand (relæet kan kun tænde og slukke, så farve og mønster
+  // bruges kun til at vise lampen på skærmen). relayOn er det seneste boardet
+  // har bekræftet, og null når det er ukendt, fx lige efter en forbindelse.
   private isOn = false
+  private relayOn: boolean | null = null
+  private sending = false
   private connectionStatus: LampConnectionStatus = 'disconnected'
-  private keepAliveInterval: ReturnType<typeof setInterval> | null = null
+  private reconnectInterval: ReturnType<typeof setInterval> | null = null
   private readonly stateListeners = new Set<(state: LampState) => void>()
   private readonly connectionListeners = new Set<(status: LampConnectionStatus) => void>()
   private readonly handleDisconnect = (): void => {
-    this.stopKeepAlive()
-    this.writer = null
-    this.setConnectionStatus('connection-lost')
+    this.loseConnection()
   }
   private readonly handleUnload = (): void => {
     this.sendOffBestEffort()
@@ -151,8 +111,8 @@ export class SerialLamp implements LampController {
   constructor(injectedPort: SerialPortLike | null = null) {
     this.port = injectedPort
     if (typeof window !== 'undefined') {
-      // Siden lukkes (eller fanen skjules på mobil) - sluk lampen hvis vi
-      // kan, så den ikke bliver hængende på tændt.
+      // Siden lukkes (eller fanen skjules) - sluk lampen hvis vi kan.
+      // Boardet slukker ikke selv, når appen forsvinder.
       window.addEventListener('pagehide', this.handleUnload)
       window.addEventListener('beforeunload', this.handleUnload)
     }
@@ -164,20 +124,19 @@ export class SerialLamp implements LampController {
   }
 
   // Forsøger at genforbinde til en port, brugeren tidligere har givet
-  // adgang til, uden at bede om en ny brugerhandling. Fejler stille, hvis
-  // der ikke er nogen tidligere port, eller forbindelsen ikke lykkes.
+  // adgang til, uden at bede om en ny brugerhandling. Fejler stille. Hvis der
+  // er flere relæ-boards tilsluttet, vælges ingen automatisk.
   async tryReconnect(): Promise<void> {
     const serial = getSerialNavigator()
-    if (!serial) {
+    if (!serial || this.connecting || this.connection) {
       return
     }
     try {
-      const ports = await serial.getPorts()
-      const port = ports[0]
-      if (!port) {
+      const boards = (await serial.getPorts()).filter(isSupportedBoard)
+      if (boards.length !== 1) {
         return
       }
-      await this.connectToPort(port)
+      await this.connectToPort(boards[0])
     } catch {
       // Stille fejl - brugeren kan altid forbinde manuelt med knappen.
     }
@@ -188,44 +147,50 @@ export class SerialLamp implements LampController {
     if (!serial) {
       throw new Error('Denne browser understøtter ikke Web Serial API.')
     }
-    return serial.requestPort()
+    return serial.requestPort({ filters: SUPPORTED_BOARDS })
   }
 
   private async connectToPort(port: SerialPortLike): Promise<void> {
-    await port.open({ baudRate: 115200 })
-
-    // ESP32-boardet genstarter typisk når porten åbnes (DTR/RTS styrer
-    // reset-pinnen på mange USB-seriel-chips). Sæt dem til false, så boardet
-    // ikke bliver holdt i en permanent reset-tilstand.
-    await port.setSignals({ dataTerminalReady: false, requestToSend: false })
-
-    if (!port.writable || !port.readable) {
-      await port.close()
-      throw new Error('Porten understøtter ikke læsning og skrivning.')
+    if (this.connecting || this.connection) {
+      return
     }
+    this.connecting = true
+    try {
+      await port.open({ baudRate: BAUD_RATE })
+      if (!port.writable || !port.readable) {
+        await port.close()
+        throw new Error('Porten understøtter ikke læsning og skrivning.')
+      }
+      await delay(SETTLE_AFTER_OPEN_MS)
 
-    const writer = port.writable.getWriter()
-    const reader = port.readable.getReader()
+      const writer = port.writable.getWriter()
+      const reader = port.readable.getReader()
+      const client = new RelayClient(writer, reader)
+      const connection: Connection = { port, writer, reader, client }
 
-    const gotPong = await pingUntilPong(writer, reader, {
-      retryIntervalMs: PING_RETRY_INTERVAL_MS,
-      totalTimeoutMs: PING_TOTAL_TIMEOUT_MS,
-    })
-    reader.releaseLock()
+      // Boardet beholder sin gamle tilstand, så den ønskede tilstand sættes
+      // altid eksplicit ved forbindelsen.
+      try {
+        await this.sendState(client, this.isOn)
+      } catch (error) {
+        await this.closeConnection(connection)
+        throw new Error(
+          'Relæ-boardet svarede ikke. Tjek kablet, og at boardet ikke står i bootloader.',
+          { cause: error },
+        )
+      }
 
-    if (!gotPong) {
-      writer.releaseLock()
-      await port.close()
-      throw new Error(
-        'ESP32-boardet svarede ikke med PONG inden for 6 sekunder. Tjek kabel og forbindelse.',
-      )
+      this.port = port
+      this.connection = connection
+      this.relayOn = this.isOn
+      port.addEventListener('disconnect', this.handleDisconnect)
+      this.stopReconnecting()
+      this.setConnectionStatus('connected')
+      // Hvis ønsket tilstand skiftede, mens vi forbandt.
+      void this.sendPending()
+    } finally {
+      this.connecting = false
     }
-
-    this.port = port
-    this.writer = writer
-    port.addEventListener('disconnect', this.handleDisconnect)
-    this.setConnectionStatus('connected')
-    this.startKeepAlive()
   }
 
   getConnectionStatus(): LampConnectionStatus {
@@ -262,54 +227,88 @@ export class SerialLamp implements LampController {
   }
 
   private setState(next: LampState): void {
-    const nextIsOn = next.color !== 'off'
-    const changed = nextIsOn !== this.isOn
-    this.isOn = nextIsOn
+    this.isOn = next.color !== 'off'
     for (const listener of this.stateListeners) {
       listener(next)
     }
-    if (changed) {
-      this.sendCommand()
-    }
+    void this.sendPending()
   }
 
-  // Relæet kan kun tænde og slukke, så farve og mønster fylder intet i selve
-  // kommandoen - de bruges kun til at vise lampen på skærmen (MockLamp).
-  private sendCommand(): void {
-    const writer = this.writer
-    if (!writer) {
+  // Sender ON eller OFF, hvis boardet ikke allerede viser den ønskede
+  // tilstand. Kører kun én kommando ad gangen, og hurtige skift samles til
+  // den seneste ønskede tilstand.
+  private async sendPending(): Promise<void> {
+    if (this.sending) {
       return
     }
-    const line = this.isOn ? 'ON' : 'OFF'
-    void writeLine(writer, line).catch(() => {
-      // Skrivningen fejlede, fx fordi kablet lige er trukket ud.
-      // disconnect-hændelsen opdaterer status separat.
-    })
+    this.sending = true
+    try {
+      while (this.connection && this.relayOn !== this.isOn) {
+        const target = this.isOn
+        const { client } = this.connection
+        await this.sendState(client, target)
+        this.relayOn = target
+      }
+    } catch {
+      this.loseConnection()
+    } finally {
+      this.sending = false
+    }
   }
 
-  private startKeepAlive(): void {
-    this.stopKeepAlive()
-    this.keepAliveInterval = setInterval(() => {
-      this.sendCommand()
-    }, KEEP_ALIVE_INTERVAL_MS)
+  // Alt andet end det forventede svar er en fejl.
+  private async sendState(client: RelayClient, on: boolean): Promise<void> {
+    const command = on ? 'ON' : 'OFF'
+    const reply = await client.command(command)
+    if (reply !== `OK ${command}`) {
+      throw new Error(`Uventet svar fra relæ-boardet: ${reply}`)
+    }
   }
 
-  private stopKeepAlive(): void {
-    if (this.keepAliveInterval !== null) {
-      clearInterval(this.keepAliveInterval)
-      this.keepAliveInterval = null
+  private loseConnection(): void {
+    const connection = this.connection
+    if (!connection) {
+      return
+    }
+    this.connection = null
+    this.port = null
+    this.relayOn = null
+    connection.port.removeEventListener('disconnect', this.handleDisconnect)
+    void this.closeConnection(connection)
+    this.setConnectionStatus('connection-lost')
+    this.startReconnecting()
+  }
+
+  private async closeConnection(connection: Connection): Promise<void> {
+    await connection.reader.cancel().catch(() => {})
+    connection.reader.releaseLock()
+    connection.writer.releaseLock()
+    await connection.port.close().catch(() => {})
+  }
+
+  private startReconnecting(): void {
+    if (this.reconnectInterval === null) {
+      this.reconnectInterval = setInterval(() => {
+        void this.tryReconnect()
+      }, RECONNECT_INTERVAL_MS)
+    }
+  }
+
+  private stopReconnecting(): void {
+    if (this.reconnectInterval !== null) {
+      clearInterval(this.reconnectInterval)
+      this.reconnectInterval = null
     }
   }
 
   // Bedste forsøg på at slukke lampen, uden at vente på svar - bruges når
-  // siden lukkes. Kan ikke garanteres at nå frem (fx hvis kablet allerede er
-  // trukket ud), men forsøges altid når der er en forbindelse.
+  // siden lukkes. Kan ikke garanteres at nå frem, men forsøges altid.
   private sendOffBestEffort(): void {
-    const writer = this.writer
-    if (!writer) {
+    const connection = this.connection
+    if (!connection) {
       return
     }
     this.isOn = false
-    void writer.write(new TextEncoder().encode('OFF\n')).catch(() => {})
+    void connection.writer.write(new TextEncoder().encode('OFF\n')).catch(() => {})
   }
 }

@@ -26,7 +26,7 @@ export function useLampSync(state: CheckoutState): void {
   // force: true sender lampens aktuelle tilstand igen, uanset om den er
   // uændret siden sidst. Bruges når instruktørpanelets testknapper (som
   // sender direkte til lampen, forbi denne synkronisering) eller selve
-  // Arduino-forbindelsen kan have ladet lampen vise noget andet end kassens
+  // lampeforbindelsen kan have ladet lampen vise noget andet end kassens
   // tilstand.
   const sync = useCallback(
     (force: boolean) => {
@@ -60,7 +60,7 @@ export function useLampSync(state: CheckoutState): void {
   }, [state, sync])
 
   useEffect(() => {
-    // Tvinger en resend, når forbindelsen til Arduinoen (gen)oprettes, så
+    // Tvinger en resend, når forbindelsen til lampen (gen)oprettes, så
     // lampen altid matcher kassen igen.
     return lamp.subscribeConnectionStatus((status) => {
       if (status === 'connected') {
