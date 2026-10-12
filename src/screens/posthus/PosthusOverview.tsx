@@ -1,9 +1,5 @@
 import { formatTimeOfDay } from '../../format'
-import {
-  countByStatus,
-  registeredParcelsSorted,
-  STATUS_LABELS,
-} from '../../posthus/parcelStatus'
+import { countByStatus, parcelsInBin } from '../../posthus/parcelStatus'
 import type { Parcel } from '../../posthus/types'
 import styles from './PosthusOverview.module.css'
 
@@ -11,12 +7,8 @@ interface PosthusOverviewProps {
   parcels: Record<string, Parcel>
 }
 
-function timeOrDash(timestamp: number | null): string {
-  return timestamp === null ? '–' : formatTimeOfDay(timestamp)
-}
-
 export function PosthusOverview({ parcels }: PosthusOverviewProps) {
-  const sorted = registeredParcelsSorted(parcels)
+  const inBin = parcelsInBin(parcels)
 
   return (
     <aside className={styles.overview}>
@@ -31,21 +23,17 @@ export function PosthusOverview({ parcels }: PosthusOverviewProps) {
         </div>
       </div>
 
-      {sorted.length === 0 ? (
-        <p className={styles.empty}>Ingen pakker registreret</p>
+      <h2 className={styles.listTitle}>Indtjekkede pakker</h2>
+
+      {inBin.length === 0 ? (
+        <p className={styles.empty}>Ingen pakker i biksen</p>
       ) : (
         <ul className={styles.list}>
-          {sorted.map((parcel) => (
-            <li
-              key={parcel.code}
-              className={`${styles.row} ${parcel.status === 'i biksen' ? styles.inBin : ''}`}
-            >
+          {inBin.map((parcel) => (
+            <li key={parcel.code} className={styles.row}>
               <span className={styles.code}>{parcel.code}</span>
-              <span className={styles.status}>{STATUS_LABELS[parcel.status]}</span>
-              <span className={styles.times}>
-                Ind: {timeOrDash(parcel.registeredAt)}
-                <br />
-                Ud: {timeOrDash(parcel.deliveredAt)}
+              <span className={styles.time}>
+                {parcel.registeredAt !== null && formatTimeOfDay(parcel.registeredAt)}
               </span>
             </li>
           ))}
