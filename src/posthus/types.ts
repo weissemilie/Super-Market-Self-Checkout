@@ -1,5 +1,5 @@
 // Statusser for en pakke. Nye statusser (fx "spærret" og "forsvundet")
-// tilføjes her og i STATUS_LABELS/STATUS_SORT_ORDER i parcelStatus.ts. Compileren
+// tilføjes her og og tager stilling til dem i parcelStatus.ts. Compileren
 // peger på de steder i koden, der skal tage stilling til dem.
 export type ParcelStatus = 'ikke ankommet' | 'i biksen' | 'udleveret'
 

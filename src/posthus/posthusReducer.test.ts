@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseCode } from './codes'
 import { createInitialState, posthusReducer } from './posthusReducer'
-import { registeredParcelsSorted } from './parcelStatus'
+import { parcelsInBin } from './parcelStatus'
 import type { PosthusAction, PosthusState } from './types'
 
 function run(state: PosthusState, ...actions: PosthusAction[]): PosthusState {
@@ -32,7 +32,7 @@ describe('posthusReducer', () => {
   it('starter med 40 pakker, der ikke er ankommet', () => {
     const state = createInitialState()
     expect(Object.keys(state.parcels)).toHaveLength(40)
-    expect(registeredParcelsSorted(state.parcels)).toHaveLength(0)
+    expect(parcelsInBin(state.parcels)).toHaveLength(0)
     expect(state.activity.kind).toBe('idle')
   })
 
@@ -98,7 +98,7 @@ describe('posthusReducer', () => {
     it('melder ukendte koder uden at registrere noget', () => {
       const state = run(createInitialState(), scan('PAKKE099', 1000))
       expect(state.activity).toMatchObject({ kind: 'unknown', code: 'PAKKE099' })
-      expect(registeredParcelsSorted(state.parcels)).toHaveLength(0)
+      expect(parcelsInBin(state.parcels)).toHaveLength(0)
     })
   })
 
@@ -213,13 +213,13 @@ describe('posthusReducer', () => {
       )
       expect(state.adminOpen).toBe(true)
       expect(state.stats).toEqual({ checkIns: 0, wrongParcels: 0, deliveryTimesMs: [] })
-      expect(registeredParcelsSorted(state.parcels)).toHaveLength(0)
+      expect(parcelsInBin(state.parcels)).toHaveLength(0)
     })
   })
 })
 
-describe('registeredParcelsSorted', () => {
-  it('sætter pakker i biksen øverst, nyeste først', () => {
+describe('parcelsInBin', () => {
+  it('viser kun pakker i biksen, nyeste først, og ikke udleverede pakker', () => {
     const state = run(
       createInitialState(),
       scan('PAKKE001', 1000),
@@ -228,10 +228,17 @@ describe('registeredParcelsSorted', () => {
       scan('SEDDEL002', 4000),
       scan('PAKKE002', 5000),
     )
-    expect(registeredParcelsSorted(state.parcels).map((p) => p.code)).toEqual([
-      'PAKKE003',
-      'PAKKE001',
-      'PAKKE002',
-    ])
+    expect(parcelsInBin(state.parcels).map((p) => p.code)).toEqual(['PAKKE003', 'PAKKE001'])
+  })
+
+  it('tager en genbrugt pakke med igen', () => {
+    const state = run(
+      createInitialState(),
+      scan('PAKKE001', 1000),
+      scan('SEDDEL001', 2000),
+      scan('PAKKE001', 3000),
+      scan('PAKKE001', 4000),
+    )
+    expect(parcelsInBin(state.parcels).map((p) => p.code)).toEqual(['PAKKE001'])
   })
 })

@@ -1,31 +1,10 @@
 import type { Parcel, ParcelStatus } from './types'
 
-export const STATUS_LABELS: Record<ParcelStatus, string> = {
-  'ikke ankommet': 'Ikke ankommet',
-  'i biksen': 'I biksen',
-  udleveret: 'Udleveret',
-}
-
-// Lavest tal står øverst i oversigten.
-const STATUS_SORT_ORDER: Record<ParcelStatus, number> = {
-  'i biksen': 0,
-  udleveret: 1,
-  'ikke ankommet': 2,
-}
-
-function lastEventTime(parcel: Parcel): number {
-  return parcel.deliveredAt ?? parcel.registeredAt ?? 0
-}
-
-// Registrerede pakker, med pakker i biksen øverst og nyeste først.
-export function registeredParcelsSorted(parcels: Record<string, Parcel>): Parcel[] {
+// Pakker, der er indtjekket og står i biksen lige nu, nyeste først.
+export function parcelsInBin(parcels: Record<string, Parcel>): Parcel[] {
   return Object.values(parcels)
-    .filter((parcel) => parcel.registeredAt !== null)
-    .sort(
-      (a, b) =>
-        STATUS_SORT_ORDER[a.status] - STATUS_SORT_ORDER[b.status] ||
-        lastEventTime(b) - lastEventTime(a),
-    )
+    .filter((parcel) => parcel.status === 'i biksen')
+    .sort((a, b) => (b.registeredAt ?? 0) - (a.registeredAt ?? 0))
 }
 
 export function countByStatus(

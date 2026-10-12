@@ -61,6 +61,23 @@ describe('PostSyd i App', () => {
     expect(screen.getAllByText('PAKKE003')).toHaveLength(1) // kun i oversigten
   })
 
+  it('listen til højre viser kun indtjekkede pakker, og en udleveret pakke forsvinder fra den', () => {
+    render(<App />)
+    const aside = () => document.querySelector('aside')!.textContent ?? ''
+    expect(aside()).toContain('Ingen pakker i biksen')
+
+    scanCode('5702000000015') // PAKKE001
+    scanCode('5702000000022') // PAKKE002
+    expect(aside()).toContain('PAKKE001')
+    expect(aside()).toContain('PAKKE002')
+
+    scanCode('5703000000012') // SEDDEL001
+    scanCode('5702000000015')
+    expect(aside()).not.toContain('PAKKE001')
+    expect(aside()).toContain('PAKKE002')
+    expect(aside()).not.toContain('Ud:')
+  })
+
   it('MESTER åbner instruktørpanelet med nulstilling og uden lampe eller tilfældige pakker', () => {
     render(<App />)
     scanCode('MESTER')
