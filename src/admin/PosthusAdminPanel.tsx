@@ -1,5 +1,6 @@
 import type { PosthusAction, PosthusState } from '../posthus/types'
 import styles from './AdminPanel.module.css'
+import { LampSection } from './LampSection'
 import { PosthusActionsSection } from './PosthusActionsSection'
 import { PosthusStatsSection } from './PosthusStatsSection'
 
@@ -30,6 +31,7 @@ export function PosthusAdminPanel({ state, dispatch }: PosthusAdminPanelProps) {
         <div className={styles.sections}>
           <PosthusStatsSection data={state} />
           <PosthusActionsSection dispatch={dispatch} />
+          <LampSection />
         </div>
       </div>
     </div>

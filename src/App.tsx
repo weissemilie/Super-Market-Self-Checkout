@@ -9,6 +9,7 @@ import { useErrorEngine } from './errors/useErrorEngine'
 import { useErrorGeneratorConfig } from './errors/useErrorGeneratorConfig'
 import { LampProvider } from './lamp/LampProvider'
 import { useLampSync } from './lamp/useLampSync'
+import { usePosthusLampSync } from './lamp/usePosthusLampSync'
 import { parseCode } from './posthus/codes'
 import { usePosthus } from './posthus/usePosthus'
 import { ScanDebug } from './scanner/ScanDebug'
@@ -26,14 +27,8 @@ import { WelcomeScreen } from './screens/WelcomeScreen'
 
 function App() {
   const department = getDepartment(window.location.search)
-  // PostSyd har ingen lampe og skal ikke kende til relæ-boardet.
-  if (department === 'posthus') {
-    return <PosthusApp />
-  }
   return (
-    <LampProvider>
-      <AppContent />
-    </LampProvider>
+    <LampProvider>{department === 'posthus' ? <PosthusApp /> : <AppContent />}</LampProvider>
   )
 }
 
@@ -46,6 +41,7 @@ function parcelCodeKind(code: string): string {
 
 function PosthusApp() {
   const { state, handleScan, recentScans, dispatch } = usePosthus()
+  usePosthusLampSync(state)
   const adminOpen = state.adminOpen
   useAdminShortcut(
     useCallback(
