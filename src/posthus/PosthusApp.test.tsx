@@ -78,13 +78,12 @@ describe('PostSyd i App', () => {
     expect(aside()).not.toContain('Ud:')
   })
 
-  it('MESTER åbner instruktørpanelet med nulstilling og uden lampe eller tilfældige pakker', () => {
+  it('MESTER åbner instruktørpanelet med nulstilling og lampe, men uden tilfældige pakker', () => {
     render(<App />)
     scanCode('MESTER')
     expect(screen.getByText('Nulstil PostSyd')).toBeTruthy()
     expect(screen.queryByText('Registrer 10 tilfældige pakker')).toBeNull()
-    expect(screen.queryByText('Lampe')).toBeNull()
-    expect(screen.queryByText('Forbind lampe')).toBeNull()
+    expect(screen.getByText('Lampe')).toBeTruthy()
   })
 
   it('afdeling uden posthus viser kassen', () => {

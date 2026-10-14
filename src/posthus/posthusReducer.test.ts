@@ -122,7 +122,7 @@ describe('posthusReducer', () => {
       expect(state.activity).toMatchObject({
         kind: 'pickup',
         parcelCode: 'PAKKE005',
-        wrongUntil: 6000,
+        wrongUntil: 8000,
       })
       expect(state.stats.wrongParcels).toBe(1)
       expect(state.parcels.PAKKE005.status).toBe('i biksen')
@@ -140,9 +140,9 @@ describe('posthusReducer', () => {
       expect(state.parcels.PAKKE006).toEqual(start.parcels.PAKKE006)
     })
 
-    it('fjerner den røde fejl efter tre sekunder, men venter fortsat', () => {
+    it('fjerner den røde fejl efter fem sekunder, men venter fortsat', () => {
       const wrong = run(inBin(), scan('SEDDEL005', 2000), scan('PAKKE006', 3000))
-      const later = posthusReducer(wrong, { type: 'TICK', now: 6000 })
+      const later = posthusReducer(wrong, { type: 'TICK', now: 8000 })
       expect(later.activity).toMatchObject({ kind: 'pickup', wrongUntil: null })
     })
 
